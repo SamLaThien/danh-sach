@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu kho hàng (Trực tiếp - Đa kết quả)</title>
+    <title>Tra cứu kho hàng (Bản chuẩn xác - Đa dòng)</title>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -86,14 +86,11 @@
             <button id="searchBtn" onclick="searchItem()" disabled>Tìm</button>
         </div>
 
-        <!-- Vùng chứa nhiều kết quả -->
         <div id="resultsWrapper"></div>
-
         <div id="errorBox" class="error">Không tìm thấy sản phẩm này trong kho!</div>
     </div>
 
     <script>
-        // Danh sách link TSV trực tiếp từ Google Sheets của bạn
         const GOOGLE_SHEETS_URLS = [
             { 
                 name: 'Giày Mẫu', 
@@ -117,7 +114,6 @@
 
             try {
                 for (const sheet of GOOGLE_SHEETS_URLS) {
-                    // Gọi TRỰC TIẾP link Google Sheets, không qua Proxy
                     const response = await fetch(sheet.url);
                     if (!response.ok) throw new Error("Mạng lỗi");
                     
@@ -137,13 +133,51 @@
             }
         }
 
-        // Thuật toán quét ma trận dữ liệu TSV
+        // BỘ GIẢI MÃ (PARSER) MỚI: Xử lý triệt để lỗi Alt+Enter trong ô Google Sheets
+        function parseTSV(text) {
+            let rows = [];
+            let currentRow = [];
+            let currentCell = '';
+            let insideQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                
+                if (char === '"') {
+                    // Xử lý dấu ngoặc kép kép (escaped quote)
+                    if (insideQuotes && text[i+1] === '"') {
+                        currentCell += '"';
+                        i++; // Bỏ qua dấu ngoặc kép tiếp theo
+                    } else {
+                        insideQuotes = !insideQuotes;
+                    }
+                } else if (char === '\t' && !insideQuotes) {
+                    currentRow.push(currentCell.trim());
+                    currentCell = '';
+                } else if (char === '\n' && !insideQuotes) {
+                    currentRow.push(currentCell.trim());
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                } else if (char === '\r' && !insideQuotes) {
+                    // Bỏ qua ký tự \r của Windows
+                } else {
+                    currentCell += char;
+                }
+            }
+            if (currentRow.length > 0) {
+                currentRow.push(currentCell.trim());
+                rows.push(currentRow);
+            }
+            return rows;
+        }
+
         function parseDataDynamic(tsv, khoName) {
-            const lines = tsv.split('\n');
+            const rows = parseTSV(tsv);
             let cabinetMap = []; 
 
-            for (let i = 0; i < lines.length; i++) {
-                const cols = lines[i].split('\t').map(col => col.trim().replace(/^"|"$/g, ''));
+            for (let i = 0; i < rows.length; i++) {
+                const cols = rows[i];
                 if (cols.length === 0) continue;
 
                 const rowText = cols.join(' ').toUpperCase();
@@ -170,19 +204,22 @@
                     const ma = cols[c+2] || "";
 
                     if (ten !== "" || (ma !== "" && stt !== "")) {
+                        // Chuyển đổi dấu ngắt dòng Alt+Enter thành dấu gạch chéo để hiển thị đẹp hơn
+                        const cleanTen = ten.replace(/\n/g, ' / ');
+                        const cleanMa = ma.replace(/\n/g, ' / ');
+
                         database.push({
                             kho: khoName,
                             tu: cabinetName,
                             stt: stt,
-                            ten: ten,
-                            ma: ma
+                            ten: cleanTen,
+                            ma: cleanMa
                         });
                     }
                 }
             }
         }
 
-        // Bắt sự kiện ấn Enter để tìm
         document.getElementById('searchInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && !this.disabled) searchItem();
         });
@@ -193,9 +230,9 @@
 
             const lowerQuery = query.toLowerCase();
             
-            // Tìm tất cả các kết quả phù hợp
+            // Tìm kiếm mở rộng: Mã có chứa từ khóa (giải quyết trường hợp 1 ô có nhiều mã)
             const results = database.filter(i => 
-                i.ma.toLowerCase() === lowerQuery || 
+                i.ma.toLowerCase().includes(lowerQuery) || 
                 i.ten.toLowerCase().includes(lowerQuery)
             );
 
