@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu kho hàng (Bản chuẩn xác - Đa dòng)</title>
+    <title>Tra cứu kho hàng (Bản Định Vị Chuẩn Xác)</title>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -133,7 +133,7 @@
             }
         }
 
-        // BỘ GIẢI MÃ (PARSER) MỚI: Xử lý triệt để lỗi Alt+Enter trong ô Google Sheets
+        // BỘ GIẢI MÃ TSV CAO CẤP: Chống vỡ cấu trúc khi có dấu xuống dòng trong ô
         function parseTSV(text) {
             let rows = [];
             let currentRow = [];
@@ -142,39 +142,40 @@
 
             for (let i = 0; i < text.length; i++) {
                 let char = text[i];
-                
+                let nextChar = text[i + 1];
+
                 if (char === '"') {
-                    // Xử lý dấu ngoặc kép kép (escaped quote)
-                    if (insideQuotes && text[i+1] === '"') {
+                    if (insideQuotes && nextChar === '"') {
                         currentCell += '"';
-                        i++; // Bỏ qua dấu ngoặc kép tiếp theo
+                        i++; 
                     } else {
-                        insideQuotes = !insideQuotes;
+                        insideQuotes = !insideQuotes; 
                     }
                 } else if (char === '\t' && !insideQuotes) {
-                    currentRow.push(currentCell.trim());
+                    currentRow.push(currentCell);
                     currentCell = '';
-                } else if (char === '\n' && !insideQuotes) {
-                    currentRow.push(currentCell.trim());
+                } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+                    if (char === '\r') continue;
+                    currentRow.push(currentCell);
                     rows.push(currentRow);
                     currentRow = [];
                     currentCell = '';
-                } else if (char === '\r' && !insideQuotes) {
-                    // Bỏ qua ký tự \r của Windows
                 } else {
                     currentCell += char;
                 }
             }
-            if (currentRow.length > 0) {
-                currentRow.push(currentCell.trim());
+            if (currentCell !== '' || currentRow.length > 0) {
+                currentRow.push(currentCell);
                 rows.push(currentRow);
             }
             return rows;
         }
 
+        // THUẬT TOÁN ĐỊNH VỊ MỎ NEO (Khắc phục triệt để lỗi lệch cột)
         function parseDataDynamic(tsv, khoName) {
             const rows = parseTSV(tsv);
             let cabinetMap = []; 
+            let blockStarts = []; // Lưu vị trí các cột mỏ neo (Cột STT)
 
             for (let i = 0; i < rows.length; i++) {
                 const cols = rows[i];
@@ -182,39 +183,58 @@
 
                 const rowText = cols.join(' ').toUpperCase();
 
+                // 1. Quét tìm dòng chứa tên Tủ/Số
                 if (rowText.includes('TỦ ') || rowText.includes('SỐ ')) {
                     let currentCabinet = "";
                     for (let c = 0; c < cols.length; c++) {
                         if (cols[c] !== "" && (cols[c].toUpperCase().includes('TỦ ') || cols[c].toUpperCase().includes('SỐ '))) {
-                            currentCabinet = cols[c];
+                            currentCabinet = cols[c].trim();
                         }
                         cabinetMap[c] = currentCabinet;
                     }
                     continue; 
                 }
 
-                if (rowText.includes('STT') || rowText.includes('TÊN HÌNH THỂ')) continue;
+                // 2. Quét tìm dòng Tiêu đề để thả Mỏ Neo (Dòng chứa chữ STT)
+                if (rowText.includes('STT')) {
+                    let tempAnchors = [];
+                    for (let c = 0; c < cols.length; c++) {
+                        if (cols[c].trim().toUpperCase() === 'STT') {
+                            tempAnchors.push(c); // Ghi nhớ cột này là cột bắt đầu
+                        }
+                    }
+                    // Nếu tìm thấy mỏ neo thì mới cập nhật, tránh bị dòng khác lừa
+                    if (tempAnchors.length > 0) {
+                        blockStarts = tempAnchors; 
+                    }
+                    continue; 
+                }
 
-                for (let c = 0; c < cols.length - 2; c += 3) {
-                    const cabinetName = cabinetMap[c]; 
-                    if (!cabinetName || cabinetName === "") continue; 
+                // 3. Tiến hành hút dữ liệu dựa trên Mỏ Neo
+                if (blockStarts.length > 0) {
+                    for (const startCol of blockStarts) {
+                        const cabinetName = cabinetMap[startCol]; 
+                        if (!cabinetName || cabinetName === "") continue; 
 
-                    const stt = cols[c] || "";
-                    const ten = cols[c+1] || "";
-                    const ma = cols[c+2] || "";
+                        // Luôn bám sát mỏ neo, không sợ bị lệch cột
+                        const stt = cols[startCol] ? cols[startCol].trim() : "";
+                        const ten = cols[startCol + 1] ? cols[startCol + 1].trim() : "";
+                        const ma = cols[startCol + 2] ? cols[startCol + 2].trim() : "";
 
-                    if (ten !== "" || (ma !== "" && stt !== "")) {
-                        // Chuyển đổi dấu ngắt dòng Alt+Enter thành dấu gạch chéo để hiển thị đẹp hơn
-                        const cleanTen = ten.replace(/\n/g, ' / ');
-                        const cleanMa = ma.replace(/\n/g, ' / ');
+                        // Bỏ qua nếu dòng trống hoàn toàn
+                        if (ten !== "" || (ma !== "" && stt !== "")) {
+                            // Xử lý đẹp mắt các dòng có nhiều mã ngắt dòng bằng Alt+Enter
+                            const cleanTen = ten.replace(/\n/g, ' / ');
+                            const cleanMa = ma.replace(/\n/g, ' / ');
 
-                        database.push({
-                            kho: khoName,
-                            tu: cabinetName,
-                            stt: stt,
-                            ten: cleanTen,
-                            ma: cleanMa
-                        });
+                            database.push({
+                                kho: khoName,
+                                tu: cabinetName,
+                                stt: stt,
+                                ten: cleanTen,
+                                ma: cleanMa
+                            });
+                        }
                     }
                 }
             }
@@ -230,7 +250,6 @@
 
             const lowerQuery = query.toLowerCase();
             
-            // Tìm kiếm mở rộng: Mã có chứa từ khóa (giải quyết trường hợp 1 ô có nhiều mã)
             const results = database.filter(i => 
                 i.ma.toLowerCase().includes(lowerQuery) || 
                 i.ten.toLowerCase().includes(lowerQuery)
