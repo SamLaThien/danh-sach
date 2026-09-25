@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu kho hàng (Bản Thuật Toán Kép)</title>
+    <title>Tra cứu</title>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -78,11 +78,11 @@
 <body>
 
     <div class="container">
-        <h2>Tra cứu kho hàng</h2>
+        <h2>Tra cứu</h2>
         <div id="status">Đang đồng bộ dữ liệu kho trực tiếp...</div>
         
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Nhập mã hoặc tên sản phẩm..." disabled>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="searchInput" placeholder="Nhập mã sản phẩm..." disabled>
             <button id="searchBtn" onclick="searchItem()" disabled>Tìm</button>
         </div>
 
@@ -283,7 +283,7 @@
                     const badgeClass = item.kho === 'Biểu Mẫu' ? 'badge bieu-mau' : 'badge';
                     htmlContent += `
                         <div class="result-card">
-                            <span class="${badgeClass}">Kho: ${item.kho}</span>
+                            <span class="${badgeClass}">${item.kho}</span>
                             <p>Tên sản phẩm: <strong>${item.ten}</strong></p>
                             <p>Mã sản phẩm: <strong>${item.ma}</strong></p>
                             <p>Đang ở: <span class="highlight">${item.tu}</span> - STT: <span class="highlight">${item.stt}</span></p>
