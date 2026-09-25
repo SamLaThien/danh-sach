@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu kho hàng (Hệ thống Đa Sheet - Đa Kết Quả)</title>
+    <title>Tra cứu kho hàng (Trực tiếp - Đa kết quả)</title>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -79,7 +79,7 @@
 
     <div class="container">
         <h2>Tra cứu kho hàng</h2>
-        <div id="status">Đang đồng bộ dữ liệu kho (qua Proxy)...</div>
+        <div id="status">Đang đồng bộ dữ liệu kho trực tiếp...</div>
         
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="Nhập mã hoặc tên sản phẩm..." disabled>
@@ -93,7 +93,7 @@
     </div>
 
     <script>
-        // Cấu trúc lại danh sách link để dán nhãn tên Kho
+        // Danh sách link TSV trực tiếp từ Google Sheets của bạn
         const GOOGLE_SHEETS_URLS = [
             { 
                 name: 'Giày Mẫu', 
@@ -105,7 +105,6 @@
             }
         ];
 
-        const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
         let database = [];
 
         window.onload = function() {
@@ -118,12 +117,11 @@
 
             try {
                 for (const sheet of GOOGLE_SHEETS_URLS) {
-                    const fetchUrl = CORS_PROXY + encodeURIComponent(sheet.url);
-                    const response = await fetch(fetchUrl);
+                    // Gọi TRỰC TIẾP link Google Sheets, không qua Proxy
+                    const response = await fetch(sheet.url);
                     if (!response.ok) throw new Error("Mạng lỗi");
                     
                     const tsvText = await response.text();
-                    // Truyền thêm tên kho vào hàm quét dữ liệu
                     parseDataDynamic(tsvText, sheet.name);
                     loadCount++;
                 }
@@ -135,10 +133,11 @@
                 document.getElementById('searchInput').focus();
             } catch (error) {
                 console.error(error);
-                document.getElementById('status').innerText = "Lỗi kết nối. Hãy kiểm tra lại mạng hoặc link Google Sheets.";
+                document.getElementById('status').innerText = "Lỗi kết nối trực tiếp. Vui lòng kiểm tra lại mạng.";
             }
         }
 
+        // Thuật toán quét ma trận dữ liệu TSV
         function parseDataDynamic(tsv, khoName) {
             const lines = tsv.split('\n');
             let cabinetMap = []; 
@@ -171,7 +170,6 @@
                     const ma = cols[c+2] || "";
 
                     if (ten !== "" || (ma !== "" && stt !== "")) {
-                        // Lưu thêm thông tin kho
                         database.push({
                             kho: khoName,
                             tu: cabinetName,
@@ -184,6 +182,7 @@
             }
         }
 
+        // Bắt sự kiện ấn Enter để tìm
         document.getElementById('searchInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && !this.disabled) searchItem();
         });
@@ -194,7 +193,7 @@
 
             const lowerQuery = query.toLowerCase();
             
-            // Lọc ra TẤT CẢ các kết quả khớp thay vì chỉ lấy 1 kết quả đầu tiên
+            // Tìm tất cả các kết quả phù hợp
             const results = database.filter(i => 
                 i.ma.toLowerCase() === lowerQuery || 
                 i.ten.toLowerCase().includes(lowerQuery)
@@ -203,14 +202,11 @@
             const resultsWrapper = document.getElementById('resultsWrapper');
             const errorBox = document.getElementById('errorBox');
 
-            // Xóa kết quả cũ
             resultsWrapper.innerHTML = '';
 
             if (results.length > 0) {
-                // Thêm tiêu đề số lượng tìm thấy
                 let htmlContent = `<div class="summary-text">Tìm thấy ${results.length} vị trí:</div>`;
                 
-                // Tạo thẻ hiển thị cho từng kết quả
                 results.forEach(item => {
                     const badgeClass = item.kho === 'Biểu Mẫu' ? 'badge bieu-mau' : 'badge';
                     htmlContent += `
@@ -232,4 +228,3 @@
     </script>
 </body>
 </html>
-
