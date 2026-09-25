@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu kho hàng (Hệ thống Đa Sheet)</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --hover-color: #1b5e20;
+            --bg-color: #f4f6f4;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            padding-top: 40px;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 { text-align: center; color: #333; margin-top: 0; }
+        #status {
+            text-align: center;
+            font-size: 14px;
+            color: #d93025;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] {
+            flex: 1; padding: 12px; font-size: 16px;
+            border: 1px solid #ddd; border-radius: 4px; outline: none;
+        }
+        input[type="text"]:focus { border-color: var(--primary-color); }
+        button {
+            padding: 12px 20px; font-size: 16px; background-color: var(--primary-color);
+            color: white; border: none; border-radius: 4px; cursor: pointer;
+        }
+        button:hover { background-color: var(--hover-color); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        .result-card {
+            display: none; padding: 20px; border-left: 5px solid var(--primary-color);
+            background-color: #e8f5e9; border-radius: 4px;
+        }
+        .result-card h3 { margin: 0 0 10px 0; color: #1b5e20; }
+        .highlight { font-weight: bold; color: #d32f2f; font-size: 18px; }
+        .error { display: none; padding: 15px; background-color: #fce8e6; color: #c5221f; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Tra cứu kho hàng</h2>
+        <div id="status">Đang đồng bộ dữ liệu kho...</div>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Nhập mã hoặc tên sản phẩm..." disabled>
+            <button id="searchBtn" onclick="searchItem()" disabled>Tìm kiếm</button>
+        </div>
+
+        <div id="resultBox" class="result-card">
+            <h3>Đã tìm thấy!</h3>
+            <p>Tên sản phẩm: <strong id="resTen"></strong></p>
+            <p>Mã sản phẩm: <strong id="resMa"></strong></p>
+            <p>Đang ở: <span id="resTu" class="highlight"></span> - STT: <span id="resStt" class="highlight"></span></p>
+        </div>
+
+        <div id="errorBox" class="error">Không tìm thấy sản phẩm này trong kho!</div>
+    </div>
+
+    <script>
+        // Danh sách link TSV trực tiếp từ Google Sheets của bạn
+        const GOOGLE_SHEETS_URLS = [
+            'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=1315766116&single=true&output=tsv', // Giày Mẫu
+            'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=535087358&single=true&output=tsv'  // Biểu Mẫu
+        ];
+
+        let database = [];
+
+        window.onload = function() {
+            fetchData();
+        };
+
+        async function fetchData() {
+            database = []; 
+            let loadCount = 0;
+
+            try {
+                for (const url of GOOGLE_SHEETS_URLS) {
+                    const response = await fetch(url);
+                    const tsvText = await response.text();
+                    
+                    parseDataDynamic(tsvText);
+                    loadCount++;
+                }
+                
+                document.getElementById('status').innerText = `Tải thành công ${database.length} sản phẩm từ ${loadCount} kho!`;
+                document.getElementById('status').style.color = "#1b5e20";
+                document.getElementById('searchInput').disabled = false;
+                document.getElementById('searchBtn').disabled = false;
+                document.getElementById('searchInput').focus();
+            } catch (error) {
+                document.getElementById('status').innerText = "Lỗi kết nối. Hãy kiểm tra lại mạng hoặc link Google Sheets.";
+            }
+        }
+
+        // Thuật toán quét ma trận dữ liệu (Tách bằng \t)
+        function parseDataDynamic(tsv) {
+            const lines = tsv.split('\n');
+            let cabinetMap = []; 
+
+            for (let i = 0; i < lines.length; i++) {
+                // Phân tách dữ liệu bằng phím Tab (\t)
+                const cols = lines[i].split('\t').map(col => col.trim().replace(/^"|"$/g, ''));
+                if (cols.length === 0) continue;
+
+                const rowText = cols.join(' ').toUpperCase();
+
+                // Xác định vị trí các Tủ
+                if (rowText.includes('TỦ ') || rowText.includes('SỐ ')) {
+                    let currentCabinet = "";
+                    for (let c = 0; c < cols.length; c++) {
+                        if (cols[c] !== "" && (cols[c].toUpperCase().includes('TỦ ') || cols[c].toUpperCase().includes('SỐ '))) {
+                            currentCabinet = cols[c];
+                        }
+                        cabinetMap[c] = currentCabinet;
+                    }
+                    continue; 
+                }
+
+                // Bỏ qua dòng tiêu đề phụ
+                if (rowText.includes('STT') || rowText.includes('TÊN HÌNH THỂ')) continue;
+
+                // Lấy dữ liệu theo từng khối 3 cột
+                for (let c = 0; c < cols.length - 2; c += 3) {
+                    const cabinetName = cabinetMap[c]; 
+                    if (!cabinetName || cabinetName === "") continue; 
+
+                    const stt = cols[c] || "";
+                    const ten = cols[c+1] || "";
+                    const ma = cols[c+2] || "";
+
+                    if (ten !== "" || (ma !== "" && stt !== "")) {
+                        database.push({
+                            tu: cabinetName,
+                            stt: stt,
+                            ten: ten,
+                            ma: ma
+                        });
+                    }
+                }
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !this.disabled) searchItem();
+        });
+
+        function searchItem() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            // Chuyển query về chữ thường để dễ so sánh
+            const lowerQuery = query.toLowerCase();
+
+            // Tìm khớp mã (chính xác) hoặc tên (chứa từ khóa)
+            const item = database.find(i => 
+                i.ma.toLowerCase() === lowerQuery || 
+                i.ten.toLowerCase().includes(lowerQuery)
+            );
+
+            const resultBox = document.getElementById('resultBox');
+            const errorBox = document.getElementById('errorBox');
+
+            if (item) {
+                document.getElementById('resTen').innerText = item.ten;
+                document.getElementById('resMa').innerText = item.ma;
+                document.getElementById('resTu').innerText = item.tu;
+                document.getElementById('resStt').innerText = item.stt;
+                
+                resultBox.style.display = 'block';
+                errorBox.style.display = 'none';
+            } else {
+                resultBox.style.display = 'none';
+                errorBox.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
