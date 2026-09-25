@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu kho hàng (Hệ thống Đa Sheet)</title>
+    <title>Tra cứu kho hàng (Hệ thống Đa Sheet - Đa Kết Quả)</title>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -17,6 +17,7 @@
             justify-content: center;
             padding-top: 40px;
             margin: 0;
+            padding-bottom: 40px;
         }
         .container {
             background: #fff;
@@ -47,43 +48,64 @@
         button:hover { background-color: var(--hover-color); }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
         
+        #resultsWrapper { margin-top: 20px; }
         .result-card {
-            display: none; padding: 20px; border-left: 5px solid var(--primary-color);
-            background-color: #e8f5e9; border-radius: 4px;
+            padding: 15px 20px; 
+            border-left: 5px solid var(--primary-color);
+            background-color: #e8f5e9; 
+            border-radius: 4px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .result-card h3 { margin: 0 0 10px 0; color: #1b5e20; }
+        .result-card p { margin: 8px 0; }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            background-color: #1976d2;
+            margin-bottom: 5px;
+        }
+        .badge.bieu-mau { background-color: #f57c00; }
+        
         .highlight { font-weight: bold; color: #d32f2f; font-size: 18px; }
         .error { display: none; padding: 15px; background-color: #fce8e6; color: #c5221f; border-radius: 4px; }
+        .summary-text { color: #1b5e20; font-size: 18px; margin-bottom: 15px; font-weight: bold;}
     </style>
 </head>
 <body>
 
     <div class="container">
         <h2>Tra cứu kho hàng</h2>
-        <div id="status">Đang đồng bộ dữ liệu kho...</div>
+        <div id="status">Đang đồng bộ dữ liệu kho (qua Proxy)...</div>
         
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="Nhập mã hoặc tên sản phẩm..." disabled>
-            <button id="searchBtn" onclick="searchItem()" disabled>Tìm kiếm</button>
+            <button id="searchBtn" onclick="searchItem()" disabled>Tìm</button>
         </div>
 
-        <div id="resultBox" class="result-card">
-            <h3>Đã tìm thấy!</h3>
-            <p>Tên sản phẩm: <strong id="resTen"></strong></p>
-            <p>Mã sản phẩm: <strong id="resMa"></strong></p>
-            <p>Đang ở: <span id="resTu" class="highlight"></span> - STT: <span id="resStt" class="highlight"></span></p>
-        </div>
+        <!-- Vùng chứa nhiều kết quả -->
+        <div id="resultsWrapper"></div>
 
         <div id="errorBox" class="error">Không tìm thấy sản phẩm này trong kho!</div>
     </div>
 
     <script>
-        // Danh sách link TSV trực tiếp từ Google Sheets của bạn
+        // Cấu trúc lại danh sách link để dán nhãn tên Kho
         const GOOGLE_SHEETS_URLS = [
-            'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=1315766116&single=true&output=tsv', // Giày Mẫu
-            'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=535087358&single=true&output=tsv'  // Biểu Mẫu
+            { 
+                name: 'Giày Mẫu', 
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=1315766116&single=true&output=tsv' 
+            },
+            { 
+                name: 'Biểu Mẫu', 
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=535087358&single=true&output=tsv' 
+            }
         ];
 
+        const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
         let database = [];
 
         window.onload = function() {
@@ -95,11 +117,14 @@
             let loadCount = 0;
 
             try {
-                for (const url of GOOGLE_SHEETS_URLS) {
-                    const response = await fetch(url);
-                    const tsvText = await response.text();
+                for (const sheet of GOOGLE_SHEETS_URLS) {
+                    const fetchUrl = CORS_PROXY + encodeURIComponent(sheet.url);
+                    const response = await fetch(fetchUrl);
+                    if (!response.ok) throw new Error("Mạng lỗi");
                     
-                    parseDataDynamic(tsvText);
+                    const tsvText = await response.text();
+                    // Truyền thêm tên kho vào hàm quét dữ liệu
+                    parseDataDynamic(tsvText, sheet.name);
                     loadCount++;
                 }
                 
@@ -109,23 +134,21 @@
                 document.getElementById('searchBtn').disabled = false;
                 document.getElementById('searchInput').focus();
             } catch (error) {
+                console.error(error);
                 document.getElementById('status').innerText = "Lỗi kết nối. Hãy kiểm tra lại mạng hoặc link Google Sheets.";
             }
         }
 
-        // Thuật toán quét ma trận dữ liệu (Tách bằng \t)
-        function parseDataDynamic(tsv) {
+        function parseDataDynamic(tsv, khoName) {
             const lines = tsv.split('\n');
             let cabinetMap = []; 
 
             for (let i = 0; i < lines.length; i++) {
-                // Phân tách dữ liệu bằng phím Tab (\t)
                 const cols = lines[i].split('\t').map(col => col.trim().replace(/^"|"$/g, ''));
                 if (cols.length === 0) continue;
 
                 const rowText = cols.join(' ').toUpperCase();
 
-                // Xác định vị trí các Tủ
                 if (rowText.includes('TỦ ') || rowText.includes('SỐ ')) {
                     let currentCabinet = "";
                     for (let c = 0; c < cols.length; c++) {
@@ -137,10 +160,8 @@
                     continue; 
                 }
 
-                // Bỏ qua dòng tiêu đề phụ
                 if (rowText.includes('STT') || rowText.includes('TÊN HÌNH THỂ')) continue;
 
-                // Lấy dữ liệu theo từng khối 3 cột
                 for (let c = 0; c < cols.length - 2; c += 3) {
                     const cabinetName = cabinetMap[c]; 
                     if (!cabinetName || cabinetName === "") continue; 
@@ -150,7 +171,9 @@
                     const ma = cols[c+2] || "";
 
                     if (ten !== "" || (ma !== "" && stt !== "")) {
+                        // Lưu thêm thông tin kho
                         database.push({
+                            kho: khoName,
                             tu: cabinetName,
                             stt: stt,
                             ten: ten,
@@ -169,31 +192,44 @@
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
 
-            // Chuyển query về chữ thường để dễ so sánh
             const lowerQuery = query.toLowerCase();
-
-            // Tìm khớp mã (chính xác) hoặc tên (chứa từ khóa)
-            const item = database.find(i => 
+            
+            // Lọc ra TẤT CẢ các kết quả khớp thay vì chỉ lấy 1 kết quả đầu tiên
+            const results = database.filter(i => 
                 i.ma.toLowerCase() === lowerQuery || 
                 i.ten.toLowerCase().includes(lowerQuery)
             );
 
-            const resultBox = document.getElementById('resultBox');
+            const resultsWrapper = document.getElementById('resultsWrapper');
             const errorBox = document.getElementById('errorBox');
 
-            if (item) {
-                document.getElementById('resTen').innerText = item.ten;
-                document.getElementById('resMa').innerText = item.ma;
-                document.getElementById('resTu').innerText = item.tu;
-                document.getElementById('resStt').innerText = item.stt;
+            // Xóa kết quả cũ
+            resultsWrapper.innerHTML = '';
+
+            if (results.length > 0) {
+                // Thêm tiêu đề số lượng tìm thấy
+                let htmlContent = `<div class="summary-text">Tìm thấy ${results.length} vị trí:</div>`;
                 
-                resultBox.style.display = 'block';
+                // Tạo thẻ hiển thị cho từng kết quả
+                results.forEach(item => {
+                    const badgeClass = item.kho === 'Biểu Mẫu' ? 'badge bieu-mau' : 'badge';
+                    htmlContent += `
+                        <div class="result-card">
+                            <span class="${badgeClass}">Kho: ${item.kho}</span>
+                            <p>Tên sản phẩm: <strong>${item.ten}</strong></p>
+                            <p>Mã sản phẩm: <strong>${item.ma}</strong></p>
+                            <p>Đang ở: <span class="highlight">${item.tu}</span> - STT: <span class="highlight">${item.stt}</span></p>
+                        </div>
+                    `;
+                });
+
+                resultsWrapper.innerHTML = htmlContent;
                 errorBox.style.display = 'none';
             } else {
-                resultBox.style.display = 'none';
                 errorBox.style.display = 'block';
             }
         }
     </script>
 </body>
 </html>
+
