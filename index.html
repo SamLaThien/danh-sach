@@ -192,7 +192,7 @@
                 let currentCabinet = "";
                 for (let c = 0; c < cols.length; c++) {
                     let cell = cols[c].trim().toUpperCase();
-                    let isCabinet = cell.startsWith('TỦ ') || cell.startsWith('SỐ ');
+                    let isCabinet = cell.startsWith('TU ') || cell.startsWith('TỦ ') || cell.startsWith('SỐ ');
                     
                     if (cell !== "" && isCabinet && !cell.includes('SỐ LƯỢNG') && !cell.includes('SO LUONG')) {
                         currentCabinet = cols[c].trim();
