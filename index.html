@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu kho hàng (Bản Siêu Chuẩn - Bàn Phím Số)</title>
+    <title>Tra cứu</title>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -78,8 +78,8 @@
 <body>
 
     <div class="container">
-        <h2>Tra cứu kho hàng</h2>
-        <div id="status">Đang đồng bộ dữ liệu kho trực tiếp...</div>
+        <h2>Tra cứu</h2>
+        <div id="status">Đang đồng bộ dữ liệu...</div>
         
         <div class="search-box">
             <!-- Đã thêm inputmode="numeric" và pattern="[0-9]*" để ưu tiên mở bàn phím số -->
@@ -123,7 +123,7 @@
                     loadCount++;
                 }
                 
-                document.getElementById('status').innerText = `Tải thành công ${database.length} sản phẩm từ ${loadCount} kho!`;
+                document.getElementById('status').innerText = `Tải thành công ${database.length} data.`;
                 document.getElementById('status').style.color = "#1b5e20";
                 document.getElementById('searchInput').disabled = false;
                 document.getElementById('searchBtn').disabled = false;
@@ -296,9 +296,9 @@
                     const badgeClass = item.kho === 'Biểu Mẫu' ? 'badge bieu-mau' : 'badge';
                     htmlContent += `
                         <div class="result-card">
-                            <span class="${badgeClass}">Kho: ${item.kho}</span>
-                            <p>Tên sản phẩm: <strong>${item.ten}</strong></p>
-                            <p>Mã sản phẩm: <strong>${item.ma}</strong></p>
+                            <span class="${badgeClass}">${item.kho}</span>
+                            <p>Tên hình thể: <strong>${item.ten}</strong></p>
+                            <p>Mã hình thể: <strong>${item.ma}</strong></p>
                             <p>Đang ở: <span class="highlight">${item.tu}</span> - STT: <span class="highlight">${item.stt}</span></p>
                         </div>
                     `;
