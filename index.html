@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu</title>
+    <title>Tra cứu Kho & Vật Liệu (Bản Online)</title>
     <style>
         :root {
             --primary-color: #2e7d32;
             --hover-color: #1b5e20;
             --bg-color: #f4f6f4;
+            --material-color: #1976d2;
+            --material-hover: #115293;
+            --info-color: #0288d1;
         }
+
         body {
             font-family: Arial, sans-serif;
             background-color: var(--bg-color);
@@ -19,17 +24,61 @@
             margin: 0;
             padding-bottom: 40px;
         }
+
         .container {
             background: #fff;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 500px;
         }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        
-        /* Chỉnh lại giao diện phần Top bar chứa trạng thái và nút làm mới */
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px 10px;
+            border: none;
+            background-color: #e0e0e0;
+            color: #555;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background-color: #d5d5d5;
+        }
+
+        .tab-btn.active#btnTabMaterial {
+            background-color: var(--material-color);
+            color: white;
+        }
+
+        .tab-btn.active#btnTabKho {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -37,49 +86,131 @@
             margin-bottom: 15px;
             gap: 10px;
         }
-        #status {
+
+        .status-text {
             font-size: 13px;
             color: #d93025;
             font-weight: bold;
             line-height: 1.4;
             flex: 1;
         }
-        #syncBtn {
+
+        .status-success {
+            color: #1b5e20;
+        }
+
+        .sync-btn {
             padding: 8px 12px;
             font-size: 13px;
-            background-color: #1976d2;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             white-space: nowrap;
         }
-        #syncBtn:hover { background-color: #115293; }
-        #syncBtn:disabled { background-color: #ccc; cursor: not-allowed; }
 
-        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .sync-btn:disabled {
+            background-color: #ccc !important;
+            cursor: not-allowed;
+        }
+
+        .btn-sync-kho {
+            background-color: var(--primary-color);
+        }
+
+        .btn-sync-kho:hover {
+            background-color: var(--hover-color);
+        }
+
+        .btn-sync-material {
+            background-color: var(--material-color);
+        }
+
+        .btn-sync-material:hover {
+            background-color: var(--material-hover);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
         input[type="text"] {
-            flex: 1; padding: 12px; font-size: 16px;
-            border: 1px solid #ddd; border-radius: 4px; outline: none;
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            outline: none;
         }
-        input[type="text"]:focus { border-color: var(--primary-color); }
+
+        input.search-kho:focus {
+            border-color: var(--primary-color);
+        }
+
+        input.search-material:focus {
+            border-color: var(--material-color);
+        }
+
         button.search-btn {
-            padding: 12px 20px; font-size: 16px; background-color: var(--primary-color);
-            color: white; border: none; border-radius: 4px; cursor: pointer;
+            padding: 12px 20px;
+            font-size: 16px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            min-width: 90px;
         }
-        button.search-btn:hover { background-color: var(--hover-color); }
-        button.search-btn:disabled { background-color: #ccc; cursor: not-allowed; }
-        
-        #resultsWrapper { margin-top: 20px; }
+
+        button.btn-kho {
+            background-color: var(--primary-color);
+        }
+
+        button.btn-kho:hover {
+            background-color: var(--hover-color);
+        }
+
+        button.btn-material {
+            background-color: var(--material-color);
+        }
+
+        button.btn-material:hover {
+            background-color: var(--material-hover);
+        }
+
+        button.search-btn:disabled {
+            background-color: #ccc !important;
+            cursor: not-allowed;
+        }
+
+        #resultsWrapper,
+        #materialResultWrapper {
+            margin-top: 10px;
+        }
+
         .result-card {
-            padding: 15px 20px; 
-            border-left: 5px solid var(--primary-color);
-            background-color: #e8f5e9; 
+            padding: 15px 20px;
+            border-left: 5px solid;
             border-radius: 4px;
             margin-bottom: 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        .result-card p { margin: 8px 0; }
+
+        .card-kho {
+            border-left-color: var(--primary-color);
+            background-color: #e8f5e9;
+        }
+
+        .card-material {
+            border-left-color: var(--material-color);
+            background-color: #e3f2fd;
+        }
+
+        .result-card p {
+            margin: 8px 0;
+        }
+
         .badge {
             display: inline-block;
             padding: 4px 8px;
@@ -87,159 +218,150 @@
             font-size: 13px;
             font-weight: bold;
             color: white;
-            background-color: #1976d2;
             margin-bottom: 5px;
         }
-        .badge.bieu-mau { background-color: #f57c00; }
-        
-        .highlight { font-weight: bold; color: #d32f2f; font-size: 18px; }
-        .error { display: none; padding: 15px; background-color: #fce8e6; color: #c5221f; border-radius: 4px; }
-        .summary-text { color: #1b5e20; font-size: 18px; margin-bottom: 15px; font-weight: bold;}
+
+        .badge.giay-mau {
+            background-color: var(--primary-color);
+        }
+
+        .badge.bieu-mau {
+            background-color: #f57c00;
+        }
+
+        .badge.vat-lieu {
+            background-color: var(--material-color);
+        }
+
+        .badge.hinh-the-gm {
+            background-color: var(--primary-color);
+        }
+
+        .badge.hinh-the-bm {
+            background-color: #f57c00;
+        }
+
+        .error {
+            display: none;
+            padding: 15px;
+            background-color: #fce8e6;
+            color: #c5221f;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .summary-text {
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .extra-code-tag {
+            display: inline-block;
+            background: #e0e0e0;
+            color: #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .extra-code-tag:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--hover-color);
+        }
     </style>
 </head>
+
 <body>
 
     <div class="container">
-        <h2>Tra cứu</h2>
-        
-        <!-- Khu vực hiển thị trạng thái và nút cập nhật -->
-        <div class="top-bar">
-            <div id="status">Đang tải...</div>
-            <button id="syncBtn" onclick="fetchData()">🔄 Làm mới dữ liệu</button>
-        </div>
-        
-        <div class="search-box">
-            <input type="text" inputmode="numeric" pattern="[0-9]*" id="searchInput" placeholder="Nhập mã hoặc tên sản phẩm..." disabled>
-            <button id="searchBtn" class="search-btn" onclick="searchItem()" disabled>Tìm</button>
+        <h2>Tra Cứu</h2>
+
+        <div class="tabs">
+            <button id="btnTabMaterial" class="tab-btn active" onclick="switchTab('material')">Vật Liệu</button>
+            <button id="btnTabKho" class="tab-btn" onclick="switchTab('kho')">Vị Trí</button>
         </div>
 
-        <div id="resultsWrapper"></div>
-        <div id="errorBox" class="error">Không tìm thấy sản phẩm này trong kho!</div>
+        <!-- ===================================== -->
+        <!-- TAB 1: TRA CỨU VẬT LIỆU -->
+        <!-- ===================================== -->
+        <div id="tab-material" class="tab-content" style="display: block;">
+            <div class="top-bar">
+                <div id="materialStatus" class="status-text">Đang tải...</div>
+                <button id="syncMaterialBtn" class="sync-btn btn-sync-material" onclick="fetchMaterialData()">🔄 Làm mới
+                    vật liệu</button>
+            </div>
+
+            <div class="search-box">
+                <input type="text" class="search-material" id="msvlInput" placeholder="Nhập mã vật liệu"
+                    disabled>
+                <button id="btnMaterialSearch" class="search-btn btn-material" onclick="searchMaterial()"
+                    disabled>Tìm</button>
+            </div>
+
+            <div id="materialResultWrapper"></div>
+            <div id="materialErrorBox" class="error">Không tìm thấy mã vật liệu này!</div>
+        </div>
+
+        <!-- ===================================== -->
+        <!-- TAB 2: TRA CỨU VỊ TRÍ KHO -->
+        <!-- ===================================== -->
+        <div id="tab-kho" class="tab-content">
+            <div class="top-bar">
+                <div id="khoStatus" class="status-text">Đang tải...</div>
+                <button id="syncKhoBtn" class="sync-btn btn-sync-kho" onclick="fetchKhoData()">🔄 Làm mới kho</button>
+            </div>
+
+            <div class="search-box">
+                <input type="text" class="search-kho" inputmode="numeric" pattern="[0-9]*" id="searchInput"
+                    placeholder="Nhập mã hình thể" disabled>
+                <button id="searchBtn" class="search-btn btn-kho" onclick="searchKho()" disabled>Tìm</button>
+            </div>
+
+            <div id="resultsWrapper"></div>
+            <div id="errorBox" class="error">Không tìm thấy sản phẩm này trong kho!</div>
+        </div>
     </div>
 
     <script>
-        const GOOGLE_SHEETS_URLS = [
-            { 
-                name: 'Giày Mẫu', 
-                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=1315766116&single=true&output=tsv' 
-            },
-            { 
-                name: 'Biểu Mẫu', 
-                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=535087358&single=true&output=tsv' 
-            }
+        // Các link Google Sheets đã xuất bản TSV
+        const GOOGLE_SHEETS_KHO_URLS = [
+            {name: 'Giày Mẫu', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=1315766116&single=true&output=tsv'},
+            {name: 'Biểu Mẫu', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=535087358&single=true&output=tsv'}
         ];
+        const MATERIAL_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=566517913&single=true&output=tsv';
 
-        let database = [];
+        function switchTab(tabName) {
+            document.getElementById('tab-material').style.display = tabName === 'material' ? 'block' : 'none';
+            document.getElementById('tab-kho').style.display = tabName === 'kho' ? 'block' : 'none';
 
-        window.onload = function() {
-            initData();
-        };
-
-        // Hàm khởi tạo dữ liệu: Kiểm tra Local Storage trước
-        function initData() {
-            const cachedData = localStorage.getItem('khoDatabase');
-            const lastSync = localStorage.getItem('khoLastSync');
-
-            if (cachedData && lastSync) {
-                // Nếu có dữ liệu trong Local Storage -> Tải ngay lập tức
-                database = JSON.parse(cachedData);
-                document.getElementById('status').innerText = `Đã tải ${database.length} data từ bộ nhớ.\n(Cập nhật: ${lastSync})`;
-                document.getElementById('status').style.color = "#1b5e20";
-                enableSearch();
-            } else {
-                // Nếu chưa có (người dùng mới) -> Tự động tải từ server
-                fetchData();
-            }
+            document.getElementById('btnTabMaterial').classList.toggle('active', tabName === 'material');
+            document.getElementById('btnTabKho').classList.toggle('active', tabName === 'kho');
         }
 
-        // Hàm mở khóa ô tìm kiếm
-        function enableSearch() {
-            document.getElementById('searchInput').disabled = false;
-            document.getElementById('searchBtn').disabled = false;
-            document.getElementById('searchInput').focus();
-        }
-
-        async function fetchData() {
-            const syncBtn = document.getElementById('syncBtn');
-            syncBtn.disabled = true;
-            syncBtn.innerText = "Đang tải...";
-            
-            document.getElementById('status').innerText = "Đang đồng bộ dữ liệu từ máy chủ...";
-            document.getElementById('status').style.color = "#d93025";
-            
-            document.getElementById('searchInput').disabled = true;
-            document.getElementById('searchBtn').disabled = true;
-
-            let tempDatabase = []; 
-
-            try {
-                for (const sheet of GOOGLE_SHEETS_URLS) {
-                    const response = await fetch(sheet.url);
-                    if (!response.ok) throw new Error("Mạng lỗi");
-                    
-                    const tsvText = await response.text();
-                    parseDataDynamic(tsvText, sheet.name, tempDatabase);
-                }
-                
-                // Cập nhật mảng chính
-                database = tempDatabase;
-                
-                // Lưu vào Local Storage
-                const syncTime = new Date().toLocaleString('vi-VN');
-                localStorage.setItem('khoDatabase', JSON.stringify(database));
-                localStorage.setItem('khoLastSync', syncTime);
-
-                document.getElementById('status').innerText = `Đã tải mới ${database.length} data.\n(Cập nhật: ${syncTime})`;
-                document.getElementById('status').style.color = "#1b5e20";
-                
-                enableSearch();
-            } catch (error) {
-                console.error(error);
-                document.getElementById('status').innerText = "Lỗi kết nối máy chủ. Vẫn đang dùng dữ liệu cũ (nếu có).";
-                document.getElementById('status').style.color = "#d93025";
-                
-                // Nếu lỗi mạng mà vẫn có data cũ thì cho phép tìm kiếm tiếp
-                if (database.length > 0) enableSearch();
-            } finally {
-                syncBtn.disabled = false;
-                syncBtn.innerText = "🔄 Làm mới dữ liệu";
-            }
-        }
-
-        // BỘ GIẢI MÃ TSV
+        // BỘ ĐỌC TSV: CHỐNG DÍNH DÒNG BẰNG CÁCH CHẶT THEO ENTER
         function parseTSV(text) {
             let rows = [];
-            let currentRow = [];
-            let currentCell = '';
-            let insideQuotes = false;
+            let lines = text.split(/\r?\n/);
 
-            for (let i = 0; i < text.length; i++) {
-                let char = text[i];
-                let nextChar = text[i + 1];
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                if (!line.trim()) continue;
 
-                if (char === '"') {
-                    if (insideQuotes && nextChar === '"') {
-                        currentCell += '"';
-                        i++; 
-                    } else {
-                        insideQuotes = !insideQuotes; 
+                let cols = line.split('\t');
+                for (let j = 0; j < cols.length; j++) {
+                    let cell = cols[j];
+                    if (cell.startsWith('"') && cell.endsWith('"')) {
+                        cell = cell.substring(1, cell.length - 1).replace(/""/g, '"');
                     }
-                } else if (char === '\t' && !insideQuotes) {
-                    currentRow.push(currentCell);
-                    currentCell = '';
-                } else if ((char === '\n' || char === '\r') && !insideQuotes) {
-                    if (char === '\r') continue;
-                    currentRow.push(currentCell);
-                    rows.push(currentRow);
-                    currentRow = [];
-                    currentCell = '';
-                } else {
-                    currentCell += char;
+                    cols[j] = cell.trim();
                 }
-            }
-            if (currentCell !== '' || currentRow.length > 0) {
-                currentRow.push(currentCell);
-                rows.push(currentRow);
+                rows.push(cols);
             }
             return rows;
         }
@@ -248,120 +370,331 @@
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
         }
 
-        // THUẬT TOÁN ĐỊNH VỊ MỎ NEO 2.0 (Truyền thêm tempDB vào để gán giá trị)
-        function parseDataDynamic(tsv, khoName, tempDB) {
+        // ==========================================
+        // KHU VỰC 1: XỬ LÝ DỮ LIỆU VẬT LIỆU
+        // ==========================================
+        let materialDatabase = {};
+
+        window.onload = function () {
+            initKhoData();
+            initMaterialData();
+        };
+
+        function initMaterialData() {
+            const cachedMaterial = localStorage.getItem('onlineMaterialDatabase');
+            const lastSync = localStorage.getItem('onlineMaterialLastSync');
+
+            if (cachedMaterial && lastSync) {
+                materialDatabase = JSON.parse(cachedMaterial);
+                const count = Object.keys(materialDatabase).length;
+                document.getElementById('materialStatus').innerText = `Đã tải ${count} mã từ bộ nhớ.\n(Cập nhật: ${lastSync})`;
+                document.getElementById('materialStatus').className = "status-text status-success";
+                enableMaterialSearch();
+            } else {
+                fetchMaterialData();
+            }
+        }
+
+        function enableMaterialSearch() {
+            document.getElementById('msvlInput').disabled = false;
+            document.getElementById('btnMaterialSearch').disabled = false;
+        }
+
+        async function fetchMaterialData() {
+            const syncBtn = document.getElementById('syncMaterialBtn');
+            syncBtn.disabled = true;
+            syncBtn.innerText = "Đang tải...";
+            document.getElementById('materialStatus').innerText = "Đang đồng bộ dữ liệu Vật Liệu...";
+            document.getElementById('materialStatus').className = "status-text";
+            document.getElementById('msvlInput').disabled = true;
+            document.getElementById('btnMaterialSearch').disabled = true;
+
+            try {
+                const response = await fetch(MATERIAL_SHEET_URL);
+                if (!response.ok) throw new Error("Mạng lỗi");
+                const tsvText = await response.text();
+
+                const rows = parseTSV(tsvText);
+                let tempMatDB = {};
+
+                for (let i = 0; i < rows.length; i++) {
+                    let row = rows[i];
+                    if (row.length >= 2) {
+                        let ma = row[0] ? row[0].trim().toUpperCase() : "";
+                        let rawTen = row[1] ? row[1].trim() : "";
+
+                        // Chống dính dòng (nếu có lỗi ngầm từ Sheets)
+                        let ten = rawTen;
+                        const errorMatch = ten.match(/\sHL02\d{11}/);
+                        if (errorMatch) {
+                            ten = ten.substring(0, errorMatch.index).trim();
+                        }
+
+                        let extraCodes = [];
+                        for (let j = 2; j < row.length; j++) {
+                            let val = row[j] ? row[j].trim() : "";
+                            if (val !== "" && val.length > 4 && val.length < 15 && /^[a-zA-Z0-9_-]+$/.test(val)) {
+                                extraCodes.push(val);
+                            }
+                        }
+
+                        if (ma && ten && !ma.includes("MÃ VẬT LIỆU") && !ma.includes("MATERIAL")) {
+                            tempMatDB[ma] = {
+                                ten: ten,
+                                extra: extraCodes
+                            };
+                        }
+                    }
+                }
+
+                materialDatabase = tempMatDB;
+                const syncTime = new Date().toLocaleString('vi-VN');
+                localStorage.setItem('onlineMaterialDatabase', JSON.stringify(materialDatabase));
+                localStorage.setItem('onlineMaterialLastSync', syncTime);
+
+                document.getElementById('materialStatus').innerText = `Đã tải mới ${Object.keys(materialDatabase).length} mã.\n(Cập nhật: ${syncTime})`;
+                document.getElementById('materialStatus').className = "status-text status-success";
+                enableMaterialSearch();
+            } catch (error) {
+                document.getElementById('materialStatus').innerText = "Lỗi kết nối.";
+                document.getElementById('materialStatus').className = "status-text";
+                if (Object.keys(materialDatabase).length > 0) enableMaterialSearch();
+            } finally {
+                syncBtn.disabled = false;
+                syncBtn.innerText = "🔄 Làm mới";
+            }
+        }
+
+        function autoSearchKho(code) {
+            const khoInput = document.getElementById('searchInput');
+            if (khoInput.disabled) {
+                alert("Vui lòng tải dữ liệu kho trước!");
+                return;
+            }
+            switchTab('kho');
+            khoInput.value = code;
+            searchKho();
+        }
+
+        function searchMaterial() {
+            const query = document.getElementById('msvlInput').value.trim().toUpperCase();
+            const resultBox = document.getElementById('materialResultWrapper');
+            const errorBox = document.getElementById('materialErrorBox');
+
+            if (!query) return;
+            let results = [];
+
+            for (const [ma, data] of Object.entries(materialDatabase)) {
+                let matchMaChinh = ma.includes(query);
+                let matchMaPhu = data.extra && data.extra.some(code => code.toUpperCase().includes(query));
+
+                if (matchMaChinh || matchMaPhu) {
+                    results.push({ma: ma, ten: data.ten, extra: data.extra});
+                }
+            }
+
+            resultBox.innerHTML = '';
+            if (results.length > 0) {
+                let htmlContent = `<div class="summary-text" style="color:var(--material-color)">Tìm thấy ${results.length} vật liệu:</div>`;
+                results.forEach(item => {
+
+                    let extraHtml = '';
+                    if (item.extra && item.extra.length > 0) {
+                        extraHtml += `<div style="margin-top: 15px; border-top: 1px dashed #bbdefb; padding-top: 10px;">`;
+
+                        let seenCodes = new Set();
+                        item.extra.forEach(code => {
+                            let upperCode = code.toUpperCase();
+                            if (seenCodes.has(upperCode)) return;
+                            seenCodes.add(upperCode);
+
+                            let isCodeFound = false;
+
+                            if (khoDatabase && khoDatabase.length > 0) {
+                                let km = khoDatabase.find(k => k.ma.toUpperCase().includes(upperCode));
+                                if (km) {
+                                    let badgeClass = km.kho === 'Biểu Mẫu' ? 'badge hinh-the-bm' : 'badge hinh-the-gm';
+
+                                    extraHtml += `
+                                        <div style="margin: 8px 0; font-size: 15px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
+                                            <strong class="${badgeClass}" style="font-size: 12px; padding: 2px 5px; border-radius:3px;">Hình Thể</strong> 
+                                            <span>: <strong>${km.ten}</strong> - </span>
+                                            <span class="extra-code-tag" onclick="autoSearchKho('${code}')" title="Nhấp để tìm chi tiết tủ">${code}</span>
+                                        </div>
+                                    `;
+                                    isCodeFound = true;
+                                }
+                            }
+
+                            if (!isCodeFound) {
+                                extraHtml += `
+                                    <div style="margin: 8px 0; font-size: 15px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
+                                        <span style="font-size: 13px; color: #757575; font-style: italic;">(Chưa có thông tin kho)</span> 
+                                        <span> - </span>
+                                        <span class="extra-code-tag" onclick="autoSearchKho('${code}')" title="Nhấp để tìm thử trong kho">${code}</span>
+                                    </div>
+                                `;
+                            }
+                        });
+                        extraHtml += `</div>`;
+                    }
+
+                    htmlContent += `
+                        <div class="result-card card-material">
+                            <p style="margin-bottom: 6px;">Mã chính: <strong style="color: #d32f2f; font-size: 16px;">${item.ma}</strong></p>
+                            <p style="margin-top: 0; margin-bottom: 10px; line-height: 1.4;">Tên Vật Liệu: <strong>${item.ten}</strong></p>
+                            ${extraHtml}
+                        </div>
+                    `;
+                });
+                resultBox.innerHTML = htmlContent;
+                errorBox.style.display = 'none';
+            } else {
+                errorBox.style.display = 'block';
+            }
+        }
+
+
+        // ==========================================
+        // KHU VỰC 2: XỬ LÝ DỮ LIỆU KHO
+        // ==========================================
+        let khoDatabase = [];
+
+        function initKhoData() {
+            const cachedKho = localStorage.getItem('onlineKhoDatabase');
+            const lastSync = localStorage.getItem('onlineKhoLastSync');
+            if (cachedKho && lastSync) {
+                khoDatabase = JSON.parse(cachedKho);
+                document.getElementById('khoStatus').innerText = `Đã tải ${khoDatabase.length} data từ bộ nhớ.\n(Cập nhật: ${lastSync})`;
+                document.getElementById('khoStatus').className = "status-text status-success";
+                enableKhoSearch();
+            } else {
+                fetchKhoData();
+            }
+        }
+
+        function enableKhoSearch() {
+            document.getElementById('searchInput').disabled = false;
+            document.getElementById('searchBtn').disabled = false;
+        }
+
+        async function fetchKhoData() {
+            const syncBtn = document.getElementById('syncKhoBtn');
+            syncBtn.disabled = true;
+            syncBtn.innerText = "Đang tải...";
+            document.getElementById('khoStatus').innerText = "Đang đồng bộ dữ liệu từ máy chủ...";
+            document.getElementById('khoStatus').className = "status-text";
+            document.getElementById('searchInput').disabled = true;
+            document.getElementById('searchBtn').disabled = true;
+
+            let tempDatabase = [];
+            try {
+                for (const sheet of GOOGLE_SHEETS_KHO_URLS) {
+                    const response = await fetch(sheet.url);
+                    if (!response.ok) throw new Error("Mạng lỗi");
+                    const tsvText = await response.text();
+                    parseKhoDynamic(tsvText, sheet.name, tempDatabase);
+                }
+
+                khoDatabase = tempDatabase;
+                const syncTime = new Date().toLocaleString('vi-VN');
+                localStorage.setItem('onlineKhoDatabase', JSON.stringify(khoDatabase));
+                localStorage.setItem('onlineKhoLastSync', syncTime);
+
+                document.getElementById('khoStatus').innerText = `Đã tải mới ${khoDatabase.length} data.\n(Cập nhật: ${syncTime})`;
+                document.getElementById('khoStatus').className = "status-text status-success";
+                enableKhoSearch();
+            } catch (error) {
+                document.getElementById('khoStatus').innerText = "Lỗi kết nối.";
+                document.getElementById('khoStatus').className = "status-text";
+                if (khoDatabase.length > 0) enableKhoSearch();
+            } finally {
+                syncBtn.disabled = false;
+                syncBtn.innerText = "🔄 Làm mới";
+            }
+        }
+
+        function parseKhoDynamic(tsv, khoName, targetDB) {
             const rows = parseTSV(tsv);
-            let cabinetMap = []; 
-            let blockStarts = []; 
+            let cabinetMap = []; let blockStarts = [];
 
             for (let i = 0; i < rows.length; i++) {
                 const cols = rows[i];
                 if (cols.length === 0) continue;
 
-                let foundCabinetInRow = false;
-                let currentCabinet = "";
+                let foundCabinetInRow = false; let currentCabinet = "";
                 for (let c = 0; c < cols.length; c++) {
                     let cell = cols[c].trim().toUpperCase();
                     let isCabinet = cell.startsWith('TU ') || cell.startsWith('TỦ ') || cell.startsWith('SỐ ');
-                    
                     if (cell !== "" && isCabinet && !cell.includes('SỐ LƯỢNG') && !cell.includes('SO LUONG')) {
-                        currentCabinet = cols[c].trim();
-                        foundCabinetInRow = true;
+                        currentCabinet = cols[c].trim(); foundCabinetInRow = true;
                     }
-                    if (foundCabinetInRow) {
-                        cabinetMap[c] = currentCabinet; 
-                    }
+                    if (foundCabinetInRow) cabinetMap[c] = currentCabinet;
                 }
-                if (foundCabinetInRow) continue; 
+                if (foundCabinetInRow) continue;
 
-                let tempAnchors = new Set();
-                let isHeaderRow = false;
-                
+                let tempAnchors = new Set(); let isHeaderRow = false;
                 for (let c = 0; c < cols.length; c++) {
                     let cellClean = removeAccents(cols[c].trim());
-                    
                     if (cellClean.includes('STT') || cellClean.includes('SO TT') || cellClean.includes('TEN HINH THE') || cellClean.includes('ARTIC_NO') || cellClean.includes('MA HINH THE') || cellClean === 'MA') {
                         isHeaderRow = true;
-                        
-                        if (cellClean.includes('STT') || cellClean.includes('SO TT')) {
-                            tempAnchors.add(c);
-                        } else if (cellClean.includes('TEN HINH THE') || cellClean.includes('TEN SP')) {
-                            if (c - 1 >= 0) tempAnchors.add(c - 1);
-                        } else if (cellClean.includes('ARTIC_NO') || cellClean.includes('MA HINH THE') || cellClean === 'MA') {
-                            if (c - 2 >= 0) tempAnchors.add(c - 2);
-                        }
+                        if (cellClean.includes('STT') || cellClean.includes('SO TT')) tempAnchors.add(c);
+                        else if (cellClean.includes('TEN HINH THE') || cellClean.includes('TEN SP')) {if (c - 1 >= 0) tempAnchors.add(c - 1);}
+                        else if (cellClean.includes('ARTIC_NO') || cellClean.includes('MA HINH THE') || cellClean === 'MA') {if (c - 2 >= 0) tempAnchors.add(c - 2);}
                     }
-                }
-                
-                if (isHeaderRow) {
-                    if (tempAnchors.size > 0) {
-                        blockStarts = Array.from(tempAnchors).sort((a, b) => a - b);
-                    }
-                    continue; 
                 }
 
-                let activeAnchors = blockStarts;
-                
+                if (isHeaderRow) {
+                    if (tempAnchors.size > 0) blockStarts = Array.from(tempAnchors).sort((a, b) => a - b);
+                    continue;
+                }
+
+                let activeAnchors = blockStarts.length > 0 ? blockStarts : [];
                 if (activeAnchors.length === 0) {
-                    activeAnchors = [];
                     for (let c = 0; c < cabinetMap.length - 2; c += 3) {
-                        if (cabinetMap[c] !== undefined && cabinetMap[c] !== "") {
-                            activeAnchors.push(c);
-                        }
+                        if (cabinetMap[c] !== undefined && cabinetMap[c] !== "") activeAnchors.push(c);
                     }
                 }
 
                 for (const startCol of activeAnchors) {
-                    const cabinetName = cabinetMap[startCol] || cabinetMap[startCol + 1] || cabinetMap[startCol + 2]; 
-                    if (!cabinetName || cabinetName === "") continue; 
+                    const cabinetName = cabinetMap[startCol] || cabinetMap[startCol + 1] || cabinetMap[startCol + 2];
+                    if (!cabinetName || cabinetName === "") continue;
 
                     const stt = cols[startCol] ? cols[startCol].trim() : "";
                     const ten = cols[startCol + 1] ? cols[startCol + 1].trim() : "";
                     const ma = cols[startCol + 2] ? cols[startCol + 2].trim() : "";
 
                     if (ten !== "" || ma !== "") {
-                        const cleanTen = ten.replace(/\n/g, ' / ');
-                        const cleanMa = ma.replace(/\n/g, ' / ');
-
-                        tempDB.push({
+                        targetDB.push({
                             kho: khoName,
                             tu: cabinetName,
-                            stt: stt || "?", 
-                            ten: cleanTen,
-                            ma: cleanMa
+                            stt: stt || "?",
+                            ten: ten.replace(/\n/g, ' / '),
+                            ma: ma.replace(/\n/g, ' / ')
                         });
                     }
                 }
             }
         }
 
-        document.getElementById('searchInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && !this.disabled) searchItem();
-        });
-
-        function searchItem() {
-            const query = document.getElementById('searchInput').value.trim();
+        function searchKho() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
             if (!query) return;
 
-            const lowerQuery = query.toLowerCase();
-            
-            const results = database.filter(i => 
-                i.ma.toLowerCase().includes(lowerQuery) || 
-                i.ten.toLowerCase().includes(lowerQuery)
+            const results = khoDatabase.filter(i =>
+                i.ma.toLowerCase().includes(query) || i.ten.toLowerCase().includes(query)
             );
 
             const resultsWrapper = document.getElementById('resultsWrapper');
             const errorBox = document.getElementById('errorBox');
-
             resultsWrapper.innerHTML = '';
 
             if (results.length > 0) {
-                let htmlContent = `<div class="summary-text">Tìm thấy ${results.length} vị trí:</div>`;
-                
+                let htmlContent = `<div class="summary-text" style="color:var(--primary-color)">Tìm thấy ${results.length} vị trí:</div>`;
                 results.forEach(item => {
-                    const badgeClass = item.kho === 'Biểu Mẫu' ? 'badge bieu-mau' : 'badge';
+                    const badgeClass = item.kho === 'Biểu Mẫu' ? 'badge bieu-mau' : 'badge giay-mau';
                     htmlContent += `
-                        <div class="result-card">
+                        <div class="result-card card-kho">
                             <span class="${badgeClass}">${item.kho}</span>
                             <p>Tên hình thể: <strong>${item.ten}</strong></p>
                             <p>Mã hình thể: <strong>${item.ma}</strong></p>
@@ -369,13 +702,20 @@
                         </div>
                     `;
                 });
-
                 resultsWrapper.innerHTML = htmlContent;
                 errorBox.style.display = 'none';
             } else {
                 errorBox.style.display = 'block';
             }
         }
+
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !this.disabled) searchKho();
+        });
+        document.getElementById('msvlInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !this.disabled) searchMaterial();
+        });
     </script>
 </body>
+
 </html>
