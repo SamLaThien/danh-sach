@@ -28,25 +28,47 @@
             max-width: 500px;
         }
         h2 { text-align: center; color: #333; margin-top: 0; }
-        #status {
-            text-align: center;
-            font-size: 14px;
-            color: #d93025;
+        
+        /* Chỉnh lại giao diện phần Top bar chứa trạng thái và nút làm mới */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
-            font-weight: bold;
+            gap: 10px;
         }
+        #status {
+            font-size: 13px;
+            color: #d93025;
+            font-weight: bold;
+            line-height: 1.4;
+            flex: 1;
+        }
+        #syncBtn {
+            padding: 8px 12px;
+            font-size: 13px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        #syncBtn:hover { background-color: #115293; }
+        #syncBtn:disabled { background-color: #ccc; cursor: not-allowed; }
+
         .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
         input[type="text"] {
             flex: 1; padding: 12px; font-size: 16px;
             border: 1px solid #ddd; border-radius: 4px; outline: none;
         }
         input[type="text"]:focus { border-color: var(--primary-color); }
-        button {
+        button.search-btn {
             padding: 12px 20px; font-size: 16px; background-color: var(--primary-color);
             color: white; border: none; border-radius: 4px; cursor: pointer;
         }
-        button:hover { background-color: var(--hover-color); }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        button.search-btn:hover { background-color: var(--hover-color); }
+        button.search-btn:disabled { background-color: #ccc; cursor: not-allowed; }
         
         #resultsWrapper { margin-top: 20px; }
         .result-card {
@@ -79,12 +101,16 @@
 
     <div class="container">
         <h2>Tra cứu</h2>
-        <div id="status">Đang đồng bộ dữ liệu...</div>
+        
+        <!-- Khu vực hiển thị trạng thái và nút cập nhật -->
+        <div class="top-bar">
+            <div id="status">Đang tải...</div>
+            <button id="syncBtn" onclick="fetchData()">🔄 Làm mới dữ liệu</button>
+        </div>
         
         <div class="search-box">
-            <!-- Đã thêm inputmode="numeric" và pattern="[0-9]*" để ưu tiên mở bàn phím số -->
             <input type="text" inputmode="numeric" pattern="[0-9]*" id="searchInput" placeholder="Nhập mã hoặc tên sản phẩm..." disabled>
-            <button id="searchBtn" onclick="searchItem()" disabled>Tìm</button>
+            <button id="searchBtn" class="search-btn" onclick="searchItem()" disabled>Tìm</button>
         </div>
 
         <div id="resultsWrapper"></div>
@@ -106,12 +132,45 @@
         let database = [];
 
         window.onload = function() {
-            fetchData();
+            initData();
         };
 
+        // Hàm khởi tạo dữ liệu: Kiểm tra Local Storage trước
+        function initData() {
+            const cachedData = localStorage.getItem('khoDatabase');
+            const lastSync = localStorage.getItem('khoLastSync');
+
+            if (cachedData && lastSync) {
+                // Nếu có dữ liệu trong Local Storage -> Tải ngay lập tức
+                database = JSON.parse(cachedData);
+                document.getElementById('status').innerText = `Đã tải ${database.length} data từ bộ nhớ.\n(Cập nhật: ${lastSync})`;
+                document.getElementById('status').style.color = "#1b5e20";
+                enableSearch();
+            } else {
+                // Nếu chưa có (người dùng mới) -> Tự động tải từ server
+                fetchData();
+            }
+        }
+
+        // Hàm mở khóa ô tìm kiếm
+        function enableSearch() {
+            document.getElementById('searchInput').disabled = false;
+            document.getElementById('searchBtn').disabled = false;
+            document.getElementById('searchInput').focus();
+        }
+
         async function fetchData() {
-            database = []; 
-            let loadCount = 0;
+            const syncBtn = document.getElementById('syncBtn');
+            syncBtn.disabled = true;
+            syncBtn.innerText = "Đang tải...";
+            
+            document.getElementById('status').innerText = "Đang đồng bộ dữ liệu từ máy chủ...";
+            document.getElementById('status').style.color = "#d93025";
+            
+            document.getElementById('searchInput').disabled = true;
+            document.getElementById('searchBtn').disabled = true;
+
+            let tempDatabase = []; 
 
             try {
                 for (const sheet of GOOGLE_SHEETS_URLS) {
@@ -119,18 +178,31 @@
                     if (!response.ok) throw new Error("Mạng lỗi");
                     
                     const tsvText = await response.text();
-                    parseDataDynamic(tsvText, sheet.name);
-                    loadCount++;
+                    parseDataDynamic(tsvText, sheet.name, tempDatabase);
                 }
                 
-                document.getElementById('status').innerText = `Tải thành công ${database.length} data.`;
+                // Cập nhật mảng chính
+                database = tempDatabase;
+                
+                // Lưu vào Local Storage
+                const syncTime = new Date().toLocaleString('vi-VN');
+                localStorage.setItem('khoDatabase', JSON.stringify(database));
+                localStorage.setItem('khoLastSync', syncTime);
+
+                document.getElementById('status').innerText = `Đã tải mới ${database.length} data.\n(Cập nhật: ${syncTime})`;
                 document.getElementById('status').style.color = "#1b5e20";
-                document.getElementById('searchInput').disabled = false;
-                document.getElementById('searchBtn').disabled = false;
-                document.getElementById('searchInput').focus();
+                
+                enableSearch();
             } catch (error) {
                 console.error(error);
-                document.getElementById('status').innerText = "Lỗi kết nối trực tiếp. Vui lòng kiểm tra lại mạng.";
+                document.getElementById('status').innerText = "Lỗi kết nối máy chủ. Vẫn đang dùng dữ liệu cũ (nếu có).";
+                document.getElementById('status').style.color = "#d93025";
+                
+                // Nếu lỗi mạng mà vẫn có data cũ thì cho phép tìm kiếm tiếp
+                if (database.length > 0) enableSearch();
+            } finally {
+                syncBtn.disabled = false;
+                syncBtn.innerText = "🔄 Làm mới dữ liệu";
             }
         }
 
@@ -172,13 +244,12 @@
             return rows;
         }
 
-        // Hàm lọc dấu tiếng Việt để so sánh chuỗi chính xác
         function removeAccents(str) {
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
         }
 
-        // THUẬT TOÁN ĐỊNH VỊ MỎ NEO 2.0 (Không thể trượt)
-        function parseDataDynamic(tsv, khoName) {
+        // THUẬT TOÁN ĐỊNH VỊ MỎ NEO 2.0 (Truyền thêm tempDB vào để gán giá trị)
+        function parseDataDynamic(tsv, khoName, tempDB) {
             const rows = parseTSV(tsv);
             let cabinetMap = []; 
             let blockStarts = []; 
@@ -187,7 +258,6 @@
                 const cols = rows[i];
                 if (cols.length === 0) continue;
 
-                // 1. Quét tìm dòng chứa tên Tủ/Số (Lọc kỹ để không dính cột "Số Lượng")
                 let foundCabinetInRow = false;
                 let currentCabinet = "";
                 for (let c = 0; c < cols.length; c++) {
@@ -204,7 +274,6 @@
                 }
                 if (foundCabinetInRow) continue; 
 
-                // 2. Định vị Mỏ Neo đa ngôn ngữ (Bắt được cả ARTIC_NO và Tiếng Trung)
                 let tempAnchors = new Set();
                 let isHeaderRow = false;
                 
@@ -231,7 +300,6 @@
                     continue; 
                 }
 
-                // 3. Tiến hành hút dữ liệu tuyệt đối (không bỏ sót khi trống STT)
                 let activeAnchors = blockStarts;
                 
                 if (activeAnchors.length === 0) {
@@ -244,7 +312,6 @@
                 }
 
                 for (const startCol of activeAnchors) {
-                    // Xử lý lấy tên tủ an toàn kể cả khi Merge Cell lệch
                     const cabinetName = cabinetMap[startCol] || cabinetMap[startCol + 1] || cabinetMap[startCol + 2]; 
                     if (!cabinetName || cabinetName === "") continue; 
 
@@ -252,15 +319,14 @@
                     const ten = cols[startCol + 1] ? cols[startCol + 1].trim() : "";
                     const ma = cols[startCol + 2] ? cols[startCol + 2].trim() : "";
 
-                    // ĐIỀU KIỆN MỚI: Chỉ cần có Mã hoặc có Tên là lưu lại, không cần ép buộc phải có STT
                     if (ten !== "" || ma !== "") {
                         const cleanTen = ten.replace(/\n/g, ' / ');
                         const cleanMa = ma.replace(/\n/g, ' / ');
 
-                        database.push({
+                        tempDB.push({
                             kho: khoName,
                             tu: cabinetName,
-                            stt: stt || "?", // Hiển thị dấu hỏi nếu lỡ quên nhập STT
+                            stt: stt || "?", 
                             ten: cleanTen,
                             ma: cleanMa
                         });
