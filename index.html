@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search & Quản Lý Vật Liệu</title>
+    <title>Search</title>
     <!-- Nhúng thư viện SheetJS để xuất file Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -129,12 +129,29 @@
             cursor: not-allowed;
         }
 
-        .btn-sync-kho { background-color: var(--primary-color); }
-        .btn-sync-kho:hover { background-color: var(--hover-color); }
-        .btn-sync-material { background-color: var(--material-color); }
-        .btn-sync-material:hover { background-color: var(--material-hover); }
-        .btn-sync-madon { background-color: var(--madon-color); }
-        .btn-sync-madon:hover { background-color: var(--madon-hover); }
+        .btn-sync-kho {
+            background-color: var(--primary-color);
+        }
+
+        .btn-sync-kho:hover {
+            background-color: var(--hover-color);
+        }
+
+        .btn-sync-material {
+            background-color: var(--material-color);
+        }
+
+        .btn-sync-material:hover {
+            background-color: var(--material-hover);
+        }
+
+        .btn-sync-madon {
+            background-color: var(--madon-color);
+        }
+
+        .btn-sync-madon:hover {
+            background-color: var(--madon-hover);
+        }
 
         .search-box {
             display: flex;
@@ -151,11 +168,20 @@
             outline: none;
         }
 
-        input.search-kho:focus { border-color: var(--primary-color); }
-        input.search-material:focus { border-color: var(--material-color); }
-        input.search-madon:focus { border-color: var(--madon-color); }
+        input.search-kho:focus {
+            border-color: var(--primary-color);
+        }
 
-        button.search-btn, .action-btn {
+        input.search-material:focus {
+            border-color: var(--material-color);
+        }
+
+        input.search-madon:focus {
+            border-color: var(--madon-color);
+        }
+
+        button.search-btn,
+        .action-btn {
             padding: 12px 20px;
             font-size: 15px;
             color: white;
@@ -166,21 +192,46 @@
             transition: 0.2s;
         }
 
-        .btn-kho { background-color: var(--primary-color); }
-        .btn-kho:hover { background-color: var(--hover-color); }
-        .btn-material { background-color: var(--material-color); }
-        .btn-material:hover { background-color: var(--material-hover); }
-        .btn-madon { background-color: var(--madon-color); }
-        .btn-madon:hover { background-color: var(--madon-hover); }
-        .btn-export { background-color: var(--primary-color); }
-        .btn-clear { background-color: var(--danger-color); }
+        .btn-kho {
+            background-color: var(--primary-color);
+        }
+
+        .btn-kho:hover {
+            background-color: var(--hover-color);
+        }
+
+        .btn-material {
+            background-color: var(--material-color);
+        }
+
+        .btn-material:hover {
+            background-color: var(--material-hover);
+        }
+
+        .btn-madon {
+            background-color: var(--madon-color);
+        }
+
+        .btn-madon:hover {
+            background-color: var(--madon-hover);
+        }
+
+        .btn-export {
+            background-color: var(--primary-color);
+        }
+
+        .btn-clear {
+            background-color: var(--danger-color);
+        }
 
         button.search-btn:disabled {
             background-color: #ccc !important;
             cursor: not-allowed;
         }
 
-        #resultsWrapper, #materialResultWrapper, #madonResultWrapper {
+        #resultsWrapper,
+        #materialResultWrapper,
+        #madonResultWrapper {
             margin-top: 10px;
         }
 
@@ -193,11 +244,24 @@
             position: relative;
         }
 
-        .card-kho { border-left-color: var(--primary-color); background-color: #e8f5e9; }
-        .card-material { border-left-color: var(--material-color); background-color: #e3f2fd; }
-        .card-madon { border-left-color: var(--madon-color); background-color: #f3e5f5; }
+        .card-kho {
+            border-left-color: var(--primary-color);
+            background-color: #e8f5e9;
+        }
 
-        .result-card p { margin: 8px 0; }
+        .card-material {
+            border-left-color: var(--material-color);
+            background-color: #e3f2fd;
+        }
+
+        .card-madon {
+            border-left-color: var(--madon-color);
+            background-color: #f3e5f5;
+        }
+
+        .result-card p {
+            margin: 8px 0;
+        }
 
         .delete-btn {
             position: absolute;
@@ -210,7 +274,10 @@
             font-size: 20px;
             font-weight: bold;
         }
-        .delete-btn:hover { color: #b71c1c; }
+
+        .delete-btn:hover {
+            color: #b71c1c;
+        }
 
         .edit-btn {
             position: absolute;
@@ -226,7 +293,12 @@
             border-radius: 4px;
             transition: 0.2s;
         }
-        .edit-btn:hover { background: #f0f0f0; border-color: var(--edit-color); color: var(--edit-color); }
+
+        .edit-btn:hover {
+            background: #f0f0f0;
+            border-color: var(--edit-color);
+            color: var(--edit-color);
+        }
 
         .edit-area {
             display: none;
@@ -234,12 +306,14 @@
             padding-top: 10px;
             border-top: 1px dashed #ccc;
         }
+
         .edit-wrapper {
             display: flex;
             gap: 8px;
             align-items: center;
             margin-top: 5px;
         }
+
         .edit-wrapper input {
             flex: 1;
             padding: 8px 10px;
@@ -248,6 +322,7 @@
             border-radius: 4px;
             outline: none;
         }
+
         .btn-save-edit {
             background-color: var(--primary-color);
             color: white;
@@ -259,7 +334,10 @@
             cursor: pointer;
             white-space: nowrap;
         }
-        .btn-save-edit:hover { background-color: var(--hover-color); }
+
+        .btn-save-edit:hover {
+            background-color: var(--hover-color);
+        }
 
         .badge {
             display: inline-block;
@@ -271,9 +349,17 @@
             margin-bottom: 5px;
         }
 
-        .badge.hinh-the-gm { background-color: var(--primary-color); }
-        .badge.hinh-the-bm { background-color: #f57c00; }
-        .badge.madon-badge { background-color: var(--madon-color); }
+        .badge.hinh-the-gm {
+            background-color: var(--primary-color);
+        }
+
+        .badge.hinh-the-bm {
+            background-color: #f57c00;
+        }
+
+        .badge.madon-badge {
+            background-color: var(--madon-color);
+        }
 
         .error {
             display: none;
@@ -315,7 +401,7 @@
 <body>
 
     <div class="container">
-        <h2>Search & Quản Lý</h2>
+        <h2>Search</h2>
 
         <div class="tabs">
             <button id="btnTabMaterial" class="tab-btn active" onclick="switchTab('material')">Vật Liệu</button>
@@ -330,12 +416,15 @@
         <div id="tab-material" class="tab-content" style="display: block;">
             <div class="top-bar">
                 <div id="materialStatus" class="status-text" style="color:var(--material-color);">Đang tải...</div>
-                <button id="syncMaterialBtn" class="sync-btn btn-sync-material" onclick="fetchMaterialData()">🔄 Làm mới</button>
+                <button id="syncMaterialBtn" class="sync-btn btn-sync-material" onclick="fetchMaterialData()">🔄 Làm
+                    mới</button>
             </div>
 
             <div class="search-box">
-                <input type="text" class="search-material" inputmode="numeric" pattern="[0-9]*" id="msvlInput" placeholder="Nhập mã vật liệu chính (HL...)" disabled>
-                <button id="btnMaterialSearch" class="search-btn btn-material" onclick="searchMaterial()" disabled>Tìm</button>
+                <input type="text" class="search-material" inputmode="numeric" pattern="[0-9]*" id="msvlInput"
+                    placeholder="MSVL" disabled>
+                <button id="btnMaterialSearch" class="search-btn btn-material" onclick="searchMaterial()"
+                    disabled>Tìm</button>
             </div>
 
             <div id="materialResultWrapper"></div>
@@ -352,7 +441,8 @@
             </div>
 
             <div class="search-box">
-                <input type="text" class="search-kho" inputmode="numeric" pattern="[0-9]*" id="searchInput" placeholder="Nhập mã hình thể" disabled>
+                <input type="text" class="search-kho" inputmode="numeric" pattern="[0-9]*" id="searchInput"
+                    placeholder="ART" disabled>
                 <button id="searchBtn" class="search-btn btn-kho" onclick="searchKho()" disabled>Tìm</button>
             </div>
 
@@ -366,11 +456,13 @@
         <div id="tab-madon" class="tab-content">
             <div class="top-bar">
                 <div id="madonStatus" class="status-text" style="color:var(--madon-color);">Đang tải...</div>
-                <button id="syncMaDonBtn" class="sync-btn btn-sync-madon" onclick="fetchMaDonData()">🔄 Làm mới đơn</button>
+                <button id="syncMaDonBtn" class="sync-btn btn-sync-madon" onclick="fetchMaDonData()">🔄 Làm mới
+                    đơn</button>
             </div>
 
             <div class="search-box">
-                <input type="text" class="search-madon" inputmode="numeric" pattern="[0-9]*" id="madonInput" placeholder="Nhập SAP, DDD hoặc SHT..." disabled>
+                <input type="text" class="search-madon" inputmode="numeric" pattern="[0-9]*" id="madonInput"
+                    placeholder="SAP, DDD hoặc ART" disabled>
                 <button id="btnMadonSearch" class="search-btn btn-madon" onclick="searchMaDon()" disabled>Tìm</button>
             </div>
 
@@ -382,22 +474,15 @@
         <!-- TAB 4: SETTINGS -->
         <!-- ===================================== -->
         <div id="tab-setting" class="tab-content">
-            <div style="font-size: 16px; font-weight:bold; color:var(--setting-color); margin-bottom: 15px;">Quản Lý Dữ Liệu Lưu Trữ (Local)</div>
-            
-            <div style="background:#f9f9f9; padding:15px; border-radius:5px; border:1px solid #ddd; margin-bottom: 15px;">
-                <div id="dbStatus" class="status-text" style="color:var(--primary-color); font-size: 15px; margin-bottom: 15px;">
-                    Tổng số vật liệu hiện có: <strong>0</strong> mục.
-                </div>
-                
+            <div
+                style="background:#f9f9f9; padding:15px; border-radius:5px; border:1px solid #ddd; margin-bottom: 15px;">
+
                 <div style="display: flex; gap:10px; width: 100%;">
-                    <button class="action-btn btn-export" style="flex: 1;" onclick="exportExcel()">📥 Xuất Excel Vật Liệu</button>
-                    <button class="action-btn btn-clear" style="flex: 1;" onclick="clearAllData()">🗑 Xóa Sạch Dữ Liệu</button>
+                    <button class="action-btn btn-export" style="flex: 1;" onclick="exportExcel()">📥 Xuất</button>
+                    <button class="action-btn btn-clear" style="flex: 1;" onclick="clearAllData()">🗑 Xóa</button>
                 </div>
             </div>
-            
-            <div style="font-size: 13px; color: #757575; font-style: italic; line-height: 1.5;">
-                * <strong>Lưu ý:</strong> Dữ liệu mã phụ bạn chỉnh sửa bằng tay sẽ được lưu ở bộ nhớ trình duyệt (LocalStorage). Bạn có thể bấm "Xuất Excel" để lưu file dự phòng hoặc "Xóa Sạch Dữ Liệu" nếu muốn làm mới lại từ đầu.
-            </div>
+
         </div>
 
     </div>
@@ -432,7 +517,7 @@
             document.getElementById('btnTabMaDon').classList.toggle('active', tabName === 'madon');
             document.getElementById('btnTabSetting').classList.toggle('active', tabName === 'setting');
 
-            if(tabName === 'setting') updateSettingsStatus();
+            if (tabName === 'setting') updateSettingsStatus();
         }
 
         function updateSettingsStatus() {
@@ -545,11 +630,11 @@
                             }
                         }
                         if (ma && ten && !ma.includes("MÃ VẬT LIỆU") && !ma.includes("MATERIAL")) {
-                            tempMatDB[ma] = { ten: ten, extra: extraCodes };
+                            tempMatDB[ma] = {ten: ten, extra: extraCodes};
                         }
                     }
                 }
-                
+
                 const localOverrides = localStorage.getItem('onlineMaterialDatabase');
                 if (localOverrides) {
                     let parsedOld = JSON.parse(localOverrides);
@@ -600,7 +685,7 @@
                     if (item.extra && item.extra.length > 0) {
                         extraHtml += `<div style="margin-top: 15px; border-top: 1px dashed #bbdefb; padding-top: 10px;">`;
                         let seenCodes = new Set();
-                        
+
                         item.extra.forEach(code => {
                             let upperCode = code.toUpperCase();
                             if (seenCodes.has(upperCode)) return;
@@ -637,14 +722,14 @@
                     htmlContent += `
                         <div class="result-card card-material">
                             <button class="delete-btn" onclick="deleteMaterialItem('${item.ma}')" title="Xóa mã này">×</button>
-                            <button class="edit-btn" onclick="toggleEdit('${item.ma}')" title="Thêm mã phụ">✏️ Sửa</button>
+                            <button class="edit-btn" onclick="toggleEdit('${item.ma}')" title="Thêm mã ART">✏️ Sửa</button>
                             
-                            <p style="margin-bottom: 6px; padding-right: 70px;">Mã: <strong style="color: #d32f2f; font-size: 16px;">${item.ma}</strong></p>
+                            <p style="margin-bottom: 6px; padding-right: 70px;">MSVL: <strong style="color: #d32f2f; font-size: 16px;">${item.ma}</strong></p>
                             <p style="margin-top: 0; margin-bottom: 10px; line-height: 1.4;">Tên Vật Liệu: <strong>${item.ten}</strong></p>
                             ${extraHtml}
 
                             <div id="edit-area-${item.ma}" class="edit-area">
-                                <label style="font-size: 13px; font-weight: bold; color: var(--edit-color);">Bổ sung mã phụ (cách nhau DẤU CÁCH):</label>
+                                <label style="font-size: 13px; font-weight: bold; color: var(--edit-color);">Mã ART:</label>
                                 <div class="edit-wrapper">
                                     <input type="text" id="input-extra-${item.ma}" onkeypress="checkEnterEdit(event, '${item.ma}')" placeholder="Ví dụ: 1234 5678...">
                                     <button class="btn-save-edit" onclick="saveEditedExtra('${item.ma}')">Lưu</button>
@@ -673,7 +758,7 @@
         function saveEditedExtra(ma) {
             const inputEl = document.getElementById(`input-extra-${ma}`);
             const newExtraStr = inputEl.value.trim();
-            
+
             if (!newExtraStr) {
                 alert("Vui lòng nhập mã phụ trước khi lưu.");
                 return;
@@ -861,14 +946,14 @@
             const lastSync = localStorage.getItem('onlineMaDonLastSync');
             if (cachedMadon && lastSync) {
                 madonDatabase = JSON.parse(cachedMadon);
-                document.getElementById('madonStatus').innerText = `Đã nạp ${madonDatabase.length} dữ liệu (từ bộ nhớ).\n(Cập nhật: ${lastSync})`;
+                document.getElementById('madonStatus').innerText = `Đã nạp ${madonDatabase.length} dữ liệu \n(Cập nhật: ${lastSync})`;
                 document.getElementById('madonStatus').className = "status-text status-success";
                 enableMaDonSearch();
             } else {
                 fetchMaDonData();
             }
         }
-        
+
         function enableMaDonSearch() {
             document.getElementById('madonInput').disabled = false;
             document.getElementById('btnMadonSearch').disabled = false;
@@ -888,7 +973,7 @@
                 if (!response.ok) throw new Error("Mạng lỗi");
                 const tsvText = await response.text();
                 const rows = parseTSV(tsvText);
-                
+
                 let tempMadonDB = [];
                 let headers = rows.length > 0 ? rows[0].map(h => h.toUpperCase()) : [];
                 let sapIdx = headers.indexOf('SAP');
@@ -896,7 +981,7 @@
                 let dddIdx = headers.indexOf('DDD');
                 let hinhTheIdx = headers.indexOf('HINH THE');
                 let shtIdx = headers.indexOf('SHT');
-                
+
                 if (sapIdx === -1) sapIdx = 0;
                 if (slIdx === -1) slIdx = 1;
                 if (dddIdx === -1) dddIdx = 2;
@@ -914,7 +999,7 @@
                         sht: row[shtIdx] ? row[shtIdx].trim() : ""
                     });
                 }
-                
+
                 madonDatabase = tempMadonDB;
                 const syncTime = new Date().toLocaleString('vi-VN');
                 localStorage.setItem('onlineMaDonDatabase', JSON.stringify(madonDatabase));
@@ -939,18 +1024,18 @@
             const errBox = document.getElementById('madonErrorBox');
             if (!query) return;
 
-            const results = madonDatabase.filter(item => 
-                item.sap.toUpperCase().includes(query) || 
-                item.ddd.toUpperCase().includes(query) || 
+            const results = madonDatabase.filter(item =>
+                item.sap.toUpperCase().includes(query) ||
+                item.ddd.toUpperCase().includes(query) ||
                 item.sht.toUpperCase().includes(query) ||
                 item.hinhthe.toUpperCase().includes(query)
             );
-            
+
             if (results.length > 0) {
                 let htmlContent = `<div class="summary-text" style="color:var(--madon-color)">Tìm thấy ${results.length} kết quả:</div>`;
                 results.forEach(item => {
                     let shtTag = item.sht ? `<span class="extra-code-tag" onclick="autoSearchKho('${item.sht}')" title="Nhấp để chuyển sang tab Vị trí và tra mã này">${item.sht}</span>` : '<em>(Chưa có mã)</em>';
-                    
+
                     let matchedHlCodes = [];
                     if (item.sht && Object.keys(materialDatabase).length > 0) {
                         const upperSHT = item.sht.toUpperCase();
@@ -1004,18 +1089,18 @@
         // 4. XỬ LÝ SETTINGS (XUẤT EXCEL & XÓA DỮ LIỆU)
         // ==========================================
         function exportExcel() {
-            if(Object.keys(materialDatabase).length === 0) {
+            if (Object.keys(materialDatabase).length === 0) {
                 alert("Dữ liệu vật liệu đang trống, không có gì để xuất.");
                 return;
             }
 
             let exportData = [];
-            let matArray = Object.entries(materialDatabase).map(([ma, val]) => ({ ma, ...val }));
+            let matArray = Object.entries(materialDatabase).map(([ma, val]) => ({ma, ...val}));
             let maxExtra = Math.max(...matArray.map(m => m.extra.length), 0);
-            
+
             let header = ["Mã Vật Liệu", "Tên Vật Liệu / Mô tả"];
-            for(let i=1; i<=maxExtra; i++) {
-                header.push(`Mã phụ ${i}`);
+            for (let i = 1; i <= maxExtra; i++) {
+                header.push(`ART ${i}`);
             }
             exportData.push(header);
 
@@ -1032,11 +1117,11 @@
         }
 
         function clearAllData() {
-            if(Object.keys(materialDatabase).length === 0) {
+            if (Object.keys(materialDatabase).length === 0) {
                 alert("Dữ liệu đã trống.");
                 return;
             }
-            if(confirm("CẢNH BÁO: Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu vật liệu đã lưu trong bộ nhớ?")) {
+            if (confirm("CẢNH BÁO: Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu vật liệu đã lưu trong bộ nhớ?")) {
                 materialDatabase = {};
                 localStorage.removeItem('onlineMaterialDatabase');
                 localStorage.removeItem('onlineMaterialLastSync');
