@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search</title>
+    <title>Search & Quản Lý Vật Liệu</title>
+    <!-- Nhúng thư viện SheetJS để xuất file Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -12,9 +14,11 @@
             --bg-color: #f4f6f4;
             --material-color: #1976d2;
             --material-hover: #115293;
-            --info-color: #0288d1;
+            --setting-color: #607d8b;
             --madon-color: #7b1fa2;
             --madon-hover: #4a148c;
+            --edit-color: #f57c00;
+            --danger-color: #d32f2f;
         }
 
         body {
@@ -33,7 +37,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 500px;
+            max-width: 560px;
         }
 
         h2 {
@@ -53,11 +57,11 @@
 
         .tab-btn {
             flex: 1;
-            padding: 15px 10px;
+            padding: 15px 5px;
             border: none;
             background-color: #e0e0e0;
             color: #555;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -79,6 +83,11 @@
 
         .tab-btn.active#btnTabMaDon {
             background-color: var(--madon-color);
+            color: white;
+        }
+
+        .tab-btn.active#btnTabSetting {
+            background-color: var(--setting-color);
             color: white;
         }
 
@@ -146,22 +155,25 @@
         input.search-material:focus { border-color: var(--material-color); }
         input.search-madon:focus { border-color: var(--madon-color); }
 
-        button.search-btn {
+        button.search-btn, .action-btn {
             padding: 12px 20px;
-            font-size: 16px;
+            font-size: 15px;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            min-width: 90px;
+            font-weight: bold;
+            transition: 0.2s;
         }
 
-        button.btn-kho { background-color: var(--primary-color); }
-        button.btn-kho:hover { background-color: var(--hover-color); }
-        button.btn-material { background-color: var(--material-color); }
-        button.btn-material:hover { background-color: var(--material-hover); }
-        button.btn-madon { background-color: var(--madon-color); }
-        button.btn-madon:hover { background-color: var(--madon-hover); }
+        .btn-kho { background-color: var(--primary-color); }
+        .btn-kho:hover { background-color: var(--hover-color); }
+        .btn-material { background-color: var(--material-color); }
+        .btn-material:hover { background-color: var(--material-hover); }
+        .btn-madon { background-color: var(--madon-color); }
+        .btn-madon:hover { background-color: var(--madon-hover); }
+        .btn-export { background-color: var(--primary-color); }
+        .btn-clear { background-color: var(--danger-color); }
 
         button.search-btn:disabled {
             background-color: #ccc !important;
@@ -178,6 +190,7 @@
             border-radius: 4px;
             margin-bottom: 15px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         .card-kho { border-left-color: var(--primary-color); background-color: #e8f5e9; }
@@ -185,6 +198,68 @@
         .card-madon { border-left-color: var(--madon-color); background-color: #f3e5f5; }
 
         .result-card p { margin: 8px 0; }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .delete-btn:hover { color: #b71c1c; }
+
+        .edit-btn {
+            position: absolute;
+            top: 12px;
+            right: 40px;
+            background: #fff;
+            border: 1px solid #ccc;
+            color: #333;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        .edit-btn:hover { background: #f0f0f0; border-color: var(--edit-color); color: var(--edit-color); }
+
+        .edit-area {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+        .edit-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .edit-wrapper input {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+        .btn-save-edit {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-save-edit:hover { background-color: var(--hover-color); }
 
         .badge {
             display: inline-block;
@@ -226,6 +301,8 @@
             border: 1px solid #ccc;
             cursor: pointer;
             transition: all 0.2s;
+            margin-right: 4px;
+            margin-bottom: 4px;
         }
 
         .extra-code-tag:hover {
@@ -238,12 +315,13 @@
 <body>
 
     <div class="container">
-        <h2>Search</h2>
+        <h2>Search & Quản Lý</h2>
 
         <div class="tabs">
             <button id="btnTabMaterial" class="tab-btn active" onclick="switchTab('material')">Vật Liệu</button>
             <button id="btnTabKho" class="tab-btn" onclick="switchTab('kho')">Vị Trí</button>
             <button id="btnTabMaDon" class="tab-btn" onclick="switchTab('madon')">Mã Đơn</button>
+            <button id="btnTabSetting" class="tab-btn" onclick="switchTab('setting')">⚙️ Settings</button>
         </div>
 
         <!-- ===================================== -->
@@ -256,7 +334,7 @@
             </div>
 
             <div class="search-box">
-                <input type="text" class="search-material" inputmode="numeric" pattern="[0-9]*" id="msvlInput" placeholder="Nhập mã vật liệu" disabled>
+                <input type="text" class="search-material" inputmode="numeric" pattern="[0-9]*" id="msvlInput" placeholder="Nhập mã vật liệu chính (HL...)" disabled>
                 <button id="btnMaterialSearch" class="search-btn btn-material" onclick="searchMaterial()" disabled>Tìm</button>
             </div>
 
@@ -283,7 +361,7 @@
         </div>
 
         <!-- ===================================== -->
-        <!-- TAB 3: TRA CỨU Mã Đơn -->
+        <!-- TAB 3: TRA CỨU MÃ ĐƠN -->
         <!-- ===================================== -->
         <div id="tab-madon" class="tab-content">
             <div class="top-bar">
@@ -300,10 +378,31 @@
             <div id="madonErrorBox" class="error">Không tìm thấy kết quả phù hợp!</div>
         </div>
 
+        <!-- ===================================== -->
+        <!-- TAB 4: SETTINGS -->
+        <!-- ===================================== -->
+        <div id="tab-setting" class="tab-content">
+            <div style="font-size: 16px; font-weight:bold; color:var(--setting-color); margin-bottom: 15px;">Quản Lý Dữ Liệu Lưu Trữ (Local)</div>
+            
+            <div style="background:#f9f9f9; padding:15px; border-radius:5px; border:1px solid #ddd; margin-bottom: 15px;">
+                <div id="dbStatus" class="status-text" style="color:var(--primary-color); font-size: 15px; margin-bottom: 15px;">
+                    Tổng số vật liệu hiện có: <strong>0</strong> mục.
+                </div>
+                
+                <div style="display: flex; gap:10px; width: 100%;">
+                    <button class="action-btn btn-export" style="flex: 1;" onclick="exportExcel()">📥 Xuất Excel Vật Liệu</button>
+                    <button class="action-btn btn-clear" style="flex: 1;" onclick="clearAllData()">🗑 Xóa Sạch Dữ Liệu</button>
+                </div>
+            </div>
+            
+            <div style="font-size: 13px; color: #757575; font-style: italic; line-height: 1.5;">
+                * <strong>Lưu ý:</strong> Dữ liệu mã phụ bạn chỉnh sửa bằng tay sẽ được lưu ở bộ nhớ trình duyệt (LocalStorage). Bạn có thể bấm "Xuất Excel" để lưu file dự phòng hoặc "Xóa Sạch Dữ Liệu" nếu muốn làm mới lại từ đầu.
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // CÁC ĐƯỜNG DẪN CẬP NHẬT
         const GOOGLE_SHEETS_KHO_URLS = [
             {name: 'Giày Mẫu', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=1315766116&single=true&output=tsv'},
             {name: 'Biểu Mẫu', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=535087358&single=true&output=tsv'}
@@ -319,16 +418,26 @@
             initKhoData();
             initMaterialData();
             initMaDonData();
+            updateSettingsStatus();
         };
 
         function switchTab(tabName) {
             document.getElementById('tab-material').style.display = tabName === 'material' ? 'block' : 'none';
             document.getElementById('tab-kho').style.display = tabName === 'kho' ? 'block' : 'none';
             document.getElementById('tab-madon').style.display = tabName === 'madon' ? 'block' : 'none';
+            document.getElementById('tab-setting').style.display = tabName === 'setting' ? 'block' : 'none';
 
             document.getElementById('btnTabMaterial').classList.toggle('active', tabName === 'material');
             document.getElementById('btnTabKho').classList.toggle('active', tabName === 'kho');
             document.getElementById('btnTabMaDon').classList.toggle('active', tabName === 'madon');
+            document.getElementById('btnTabSetting').classList.toggle('active', tabName === 'setting');
+
+            if(tabName === 'setting') updateSettingsStatus();
+        }
+
+        function updateSettingsStatus() {
+            const count = Object.keys(materialDatabase).length;
+            document.getElementById('dbStatus').innerHTML = `Tổng số vật liệu hiện có: <strong>${count}</strong> mục.`;
         }
 
         function parseTSV(text) {
@@ -354,7 +463,6 @@
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
         }
 
-        // Chuyển Tab nhanh
         function autoSearchKho(code) {
             if (khoDatabase.length === 0) {
                 alert("Dữ liệu Kho chưa được tải, vui lòng chờ!");
@@ -393,6 +501,7 @@
             } else {
                 fetchMaterialData();
             }
+            updateSettingsStatus();
         }
 
         function enableMaterialSearch() {
@@ -431,7 +540,7 @@
                         for (let j = 2; j < row.length; j++) {
                             let val = row[j] ? row[j].trim() : "";
                             if (val !== "" && val.length > 4 && val.length < 15) {
-                                val = val.replace(/\.0$/, ''); // Xóa .0 nếu có
+                                val = val.replace(/\.0$/, '');
                                 extraCodes.push(val);
                             }
                         }
@@ -440,6 +549,18 @@
                         }
                     }
                 }
+                
+                const localOverrides = localStorage.getItem('onlineMaterialDatabase');
+                if (localOverrides) {
+                    let parsedOld = JSON.parse(localOverrides);
+                    for (let key in tempMatDB) {
+                        if (parsedOld[key] && parsedOld[key].extra) {
+                            let combined = [...new Set([...tempMatDB[key].extra, ...parsedOld[key].extra])];
+                            tempMatDB[key].extra = combined;
+                        }
+                    }
+                }
+
                 materialDatabase = tempMatDB;
                 const syncTime = new Date().toLocaleString('vi-VN');
                 localStorage.setItem('onlineMaterialDatabase', JSON.stringify(materialDatabase));
@@ -454,6 +575,7 @@
             } finally {
                 syncBtn.disabled = false;
                 syncBtn.innerText = "🔄 Làm mới";
+                updateSettingsStatus();
             }
         }
 
@@ -465,10 +587,7 @@
 
             let results = [];
             for (const [ma, data] of Object.entries(materialDatabase)) {
-                let matchMaChinh = ma.includes(query);
-                let matchMaPhu = data.extra && data.extra.some(code => code.toUpperCase().includes(query));
-
-                if (matchMaChinh || matchMaPhu) {
+                if (ma.includes(query)) {
                     results.push({ma: ma, ten: data.ten, extra: data.extra});
                 }
             }
@@ -514,11 +633,23 @@
                         });
                         extraHtml += `</div>`;
                     }
+
                     htmlContent += `
                         <div class="result-card card-material">
-                            <p style="margin-bottom: 6px;">Mã: <strong style="color: #d32f2f; font-size: 16px;">${item.ma}</strong></p>
+                            <button class="delete-btn" onclick="deleteMaterialItem('${item.ma}')" title="Xóa mã này">×</button>
+                            <button class="edit-btn" onclick="toggleEdit('${item.ma}')" title="Thêm mã phụ">✏️ Sửa</button>
+                            
+                            <p style="margin-bottom: 6px; padding-right: 70px;">Mã: <strong style="color: #d32f2f; font-size: 16px;">${item.ma}</strong></p>
                             <p style="margin-top: 0; margin-bottom: 10px; line-height: 1.4;">Tên Vật Liệu: <strong>${item.ten}</strong></p>
                             ${extraHtml}
+
+                            <div id="edit-area-${item.ma}" class="edit-area">
+                                <label style="font-size: 13px; font-weight: bold; color: var(--edit-color);">Bổ sung mã phụ (cách nhau DẤU CÁCH):</label>
+                                <div class="edit-wrapper">
+                                    <input type="text" id="input-extra-${item.ma}" onkeypress="checkEnterEdit(event, '${item.ma}')" placeholder="Ví dụ: 1234 5678...">
+                                    <button class="btn-save-edit" onclick="saveEditedExtra('${item.ma}')">Lưu</button>
+                                </div>
+                            </div>
                         </div>
                     `;
                 });
@@ -526,6 +657,48 @@
                 errorBox.style.display = 'none';
             } else {
                 errorBox.style.display = 'block';
+            }
+        }
+
+        function toggleEdit(ma) {
+            const editArea = document.getElementById(`edit-area-${ma}`);
+            if (editArea.style.display === 'none' || editArea.style.display === '') {
+                editArea.style.display = 'block';
+                document.getElementById(`input-extra-${ma}`).focus();
+            } else {
+                editArea.style.display = 'none';
+            }
+        }
+
+        function saveEditedExtra(ma) {
+            const inputEl = document.getElementById(`input-extra-${ma}`);
+            const newExtraStr = inputEl.value.trim();
+            
+            if (!newExtraStr) {
+                alert("Vui lòng nhập mã phụ trước khi lưu.");
+                return;
+            }
+
+            if (materialDatabase[ma]) {
+                const newExtraArr = newExtraStr.split(/\s+/).filter(s => s !== "");
+                const combined = [...materialDatabase[ma].extra, ...newExtraArr];
+                materialDatabase[ma].extra = [...new Set(combined)];
+
+                localStorage.setItem('onlineMaterialDatabase', JSON.stringify(materialDatabase));
+                searchMaterial();
+            }
+        }
+
+        function checkEnterEdit(event, ma) {
+            if (event.key === 'Enter') saveEditedExtra(ma);
+        }
+
+        function deleteMaterialItem(ma) {
+            if (confirm(`Bạn có chắc chắn muốn xóa mã vật liệu ${ma} này không?`)) {
+                delete materialDatabase[ma];
+                localStorage.setItem('onlineMaterialDatabase', JSON.stringify(materialDatabase));
+                searchMaterial();
+                updateSettingsStatus();
             }
         }
 
@@ -681,7 +854,7 @@
         }
 
         // ==========================================
-        // 3. XỬ LÝ DỮ LIỆU: MÃ ĐƠN (TỪ GOOGLE SHEETS)
+        // 3. XỬ LÝ DỮ LIỆU: MÃ ĐƠN
         // ==========================================
         function initMaDonData() {
             const cachedMadon = localStorage.getItem('onlineMaDonDatabase');
@@ -824,6 +997,53 @@
             } else {
                 wrapper.innerHTML = '';
                 errBox.style.display = 'block';
+            }
+        }
+
+        // ==========================================
+        // 4. XỬ LÝ SETTINGS (XUẤT EXCEL & XÓA DỮ LIỆU)
+        // ==========================================
+        function exportExcel() {
+            if(Object.keys(materialDatabase).length === 0) {
+                alert("Dữ liệu vật liệu đang trống, không có gì để xuất.");
+                return;
+            }
+
+            let exportData = [];
+            let matArray = Object.entries(materialDatabase).map(([ma, val]) => ({ ma, ...val }));
+            let maxExtra = Math.max(...matArray.map(m => m.extra.length), 0);
+            
+            let header = ["Mã Vật Liệu", "Tên Vật Liệu / Mô tả"];
+            for(let i=1; i<=maxExtra; i++) {
+                header.push(`Mã phụ ${i}`);
+            }
+            exportData.push(header);
+
+            matArray.forEach(item => {
+                let row = [item.ma, item.ten];
+                item.extra.forEach(ext => row.push(ext));
+                exportData.push(row);
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "VatLieu Local");
+            XLSX.writeFile(workbook, "DanhSach_VatLieu_Local.xlsx");
+        }
+
+        function clearAllData() {
+            if(Object.keys(materialDatabase).length === 0) {
+                alert("Dữ liệu đã trống.");
+                return;
+            }
+            if(confirm("CẢNH BÁO: Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu vật liệu đã lưu trong bộ nhớ?")) {
+                materialDatabase = {};
+                localStorage.removeItem('onlineMaterialDatabase');
+                localStorage.removeItem('onlineMaterialLastSync');
+                updateSettingsStatus();
+                document.getElementById('materialResultWrapper').innerHTML = "";
+                document.getElementById('msvlInput').value = "";
+                alert("Đã xóa sạch dữ liệu thành công.");
             }
         }
 
