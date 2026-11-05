@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra cứu Kho & Vật Liệu (Bản Online)</title>
+    <title>Search</title>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -13,6 +13,8 @@
             --material-color: #1976d2;
             --material-hover: #115293;
             --info-color: #0288d1;
+            --madon-color: #7b1fa2;
+            --madon-hover: #4a148c;
         }
 
         body {
@@ -75,6 +77,11 @@
             color: white;
         }
 
+        .tab-btn.active#btnTabMaDon {
+            background-color: var(--madon-color);
+            color: white;
+        }
+
         .tab-content {
             display: none;
         }
@@ -89,14 +96,13 @@
 
         .status-text {
             font-size: 13px;
-            color: #d93025;
             font-weight: bold;
             line-height: 1.4;
             flex: 1;
         }
 
         .status-success {
-            color: #1b5e20;
+            color: #1b5e20 !important;
         }
 
         .sync-btn {
@@ -114,21 +120,12 @@
             cursor: not-allowed;
         }
 
-        .btn-sync-kho {
-            background-color: var(--primary-color);
-        }
-
-        .btn-sync-kho:hover {
-            background-color: var(--hover-color);
-        }
-
-        .btn-sync-material {
-            background-color: var(--material-color);
-        }
-
-        .btn-sync-material:hover {
-            background-color: var(--material-hover);
-        }
+        .btn-sync-kho { background-color: var(--primary-color); }
+        .btn-sync-kho:hover { background-color: var(--hover-color); }
+        .btn-sync-material { background-color: var(--material-color); }
+        .btn-sync-material:hover { background-color: var(--material-hover); }
+        .btn-sync-madon { background-color: var(--madon-color); }
+        .btn-sync-madon:hover { background-color: var(--madon-hover); }
 
         .search-box {
             display: flex;
@@ -145,13 +142,9 @@
             outline: none;
         }
 
-        input.search-kho:focus {
-            border-color: var(--primary-color);
-        }
-
-        input.search-material:focus {
-            border-color: var(--material-color);
-        }
+        input.search-kho:focus { border-color: var(--primary-color); }
+        input.search-material:focus { border-color: var(--material-color); }
+        input.search-madon:focus { border-color: var(--madon-color); }
 
         button.search-btn {
             padding: 12px 20px;
@@ -163,29 +156,19 @@
             min-width: 90px;
         }
 
-        button.btn-kho {
-            background-color: var(--primary-color);
-        }
-
-        button.btn-kho:hover {
-            background-color: var(--hover-color);
-        }
-
-        button.btn-material {
-            background-color: var(--material-color);
-        }
-
-        button.btn-material:hover {
-            background-color: var(--material-hover);
-        }
+        button.btn-kho { background-color: var(--primary-color); }
+        button.btn-kho:hover { background-color: var(--hover-color); }
+        button.btn-material { background-color: var(--material-color); }
+        button.btn-material:hover { background-color: var(--material-hover); }
+        button.btn-madon { background-color: var(--madon-color); }
+        button.btn-madon:hover { background-color: var(--madon-hover); }
 
         button.search-btn:disabled {
             background-color: #ccc !important;
             cursor: not-allowed;
         }
 
-        #resultsWrapper,
-        #materialResultWrapper {
+        #resultsWrapper, #materialResultWrapper, #madonResultWrapper {
             margin-top: 10px;
         }
 
@@ -197,19 +180,11 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        .card-kho {
-            border-left-color: var(--primary-color);
-            background-color: #e8f5e9;
-        }
+        .card-kho { border-left-color: var(--primary-color); background-color: #e8f5e9; }
+        .card-material { border-left-color: var(--material-color); background-color: #e3f2fd; }
+        .card-madon { border-left-color: var(--madon-color); background-color: #f3e5f5; }
 
-        .card-material {
-            border-left-color: var(--material-color);
-            background-color: #e3f2fd;
-        }
-
-        .result-card p {
-            margin: 8px 0;
-        }
+        .result-card p { margin: 8px 0; }
 
         .badge {
             display: inline-block;
@@ -221,25 +196,9 @@
             margin-bottom: 5px;
         }
 
-        .badge.giay-mau {
-            background-color: var(--primary-color);
-        }
-
-        .badge.bieu-mau {
-            background-color: #f57c00;
-        }
-
-        .badge.vat-lieu {
-            background-color: var(--material-color);
-        }
-
-        .badge.hinh-the-gm {
-            background-color: var(--primary-color);
-        }
-
-        .badge.hinh-the-bm {
-            background-color: #f57c00;
-        }
+        .badge.hinh-the-gm { background-color: var(--primary-color); }
+        .badge.hinh-the-bm { background-color: #f57c00; }
+        .badge.madon-badge { background-color: var(--madon-color); }
 
         .error {
             display: none;
@@ -266,13 +225,12 @@
             font-weight: bold;
             border: 1px solid #ccc;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
         }
 
         .extra-code-tag:hover {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--hover-color);
+            opacity: 0.85;
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -280,11 +238,12 @@
 <body>
 
     <div class="container">
-        <h2>Tra Cứu</h2>
+        <h2>Search</h2>
 
         <div class="tabs">
             <button id="btnTabMaterial" class="tab-btn active" onclick="switchTab('material')">Vật Liệu</button>
             <button id="btnTabKho" class="tab-btn" onclick="switchTab('kho')">Vị Trí</button>
+            <button id="btnTabMaDon" class="tab-btn" onclick="switchTab('madon')">Mã Đơn</button>
         </div>
 
         <!-- ===================================== -->
@@ -292,16 +251,13 @@
         <!-- ===================================== -->
         <div id="tab-material" class="tab-content" style="display: block;">
             <div class="top-bar">
-                <div id="materialStatus" class="status-text">Đang tải...</div>
-                <button id="syncMaterialBtn" class="sync-btn btn-sync-material" onclick="fetchMaterialData()">🔄 Làm mới
-                    vật liệu</button>
+                <div id="materialStatus" class="status-text" style="color:var(--material-color);">Đang tải...</div>
+                <button id="syncMaterialBtn" class="sync-btn btn-sync-material" onclick="fetchMaterialData()">🔄 Làm mới</button>
             </div>
 
             <div class="search-box">
-                <input type="text" class="search-material" id="msvlInput" placeholder="Nhập mã vật liệu"
-                    disabled>
-                <button id="btnMaterialSearch" class="search-btn btn-material" onclick="searchMaterial()"
-                    disabled>Tìm</button>
+                <input type="text" class="search-material" inputmode="numeric" pattern="[0-9]*" id="msvlInput" placeholder="Nhập mã vật liệu" disabled>
+                <button id="btnMaterialSearch" class="search-btn btn-material" onclick="searchMaterial()" disabled>Tìm</button>
             </div>
 
             <div id="materialResultWrapper"></div>
@@ -313,46 +269,74 @@
         <!-- ===================================== -->
         <div id="tab-kho" class="tab-content">
             <div class="top-bar">
-                <div id="khoStatus" class="status-text">Đang tải...</div>
+                <div id="khoStatus" class="status-text" style="color:var(--primary-color);">Đang tải...</div>
                 <button id="syncKhoBtn" class="sync-btn btn-sync-kho" onclick="fetchKhoData()">🔄 Làm mới kho</button>
             </div>
 
             <div class="search-box">
-                <input type="text" class="search-kho" inputmode="numeric" pattern="[0-9]*" id="searchInput"
-                    placeholder="Nhập mã hình thể" disabled>
+                <input type="text" class="search-kho" inputmode="numeric" pattern="[0-9]*" id="searchInput" placeholder="Nhập mã hình thể" disabled>
                 <button id="searchBtn" class="search-btn btn-kho" onclick="searchKho()" disabled>Tìm</button>
             </div>
 
             <div id="resultsWrapper"></div>
             <div id="errorBox" class="error">Không tìm thấy sản phẩm này trong kho!</div>
         </div>
+
+        <!-- ===================================== -->
+        <!-- TAB 3: TRA CỨU Mã Đơn -->
+        <!-- ===================================== -->
+        <div id="tab-madon" class="tab-content">
+            <div class="top-bar">
+                <div id="madonStatus" class="status-text" style="color:var(--madon-color);">Đang tải...</div>
+                <button id="syncMaDonBtn" class="sync-btn btn-sync-madon" onclick="fetchMaDonData()">🔄 Làm mới đơn</button>
+            </div>
+
+            <div class="search-box">
+                <input type="text" class="search-madon" inputmode="numeric" pattern="[0-9]*" id="madonInput" placeholder="Nhập SAP, DDD hoặc SHT..." disabled>
+                <button id="btnMadonSearch" class="search-btn btn-madon" onclick="searchMaDon()" disabled>Tìm</button>
+            </div>
+
+            <div id="madonResultWrapper"></div>
+            <div id="madonErrorBox" class="error">Không tìm thấy kết quả phù hợp!</div>
+        </div>
+
     </div>
 
     <script>
-        // Các link Google Sheets đã xuất bản TSV
+        // CÁC ĐƯỜNG DẪN CẬP NHẬT
         const GOOGLE_SHEETS_KHO_URLS = [
             {name: 'Giày Mẫu', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=1315766116&single=true&output=tsv'},
             {name: 'Biểu Mẫu', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=535087358&single=true&output=tsv'}
         ];
         const MATERIAL_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=566517913&single=true&output=tsv';
+        const MADON_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6Pe83G4ub2Wx0mZaUvK-5Au2TmalAfYDWViqP5zZ4feG7781J086-22tKxpmxCOsfqeGmH--Vhatc/pub?gid=1497208799&single=true&output=tsv';
+
+        let materialDatabase = {};
+        let khoDatabase = [];
+        let madonDatabase = [];
+
+        window.onload = function () {
+            initKhoData();
+            initMaterialData();
+            initMaDonData();
+        };
 
         function switchTab(tabName) {
             document.getElementById('tab-material').style.display = tabName === 'material' ? 'block' : 'none';
             document.getElementById('tab-kho').style.display = tabName === 'kho' ? 'block' : 'none';
+            document.getElementById('tab-madon').style.display = tabName === 'madon' ? 'block' : 'none';
 
             document.getElementById('btnTabMaterial').classList.toggle('active', tabName === 'material');
             document.getElementById('btnTabKho').classList.toggle('active', tabName === 'kho');
+            document.getElementById('btnTabMaDon').classList.toggle('active', tabName === 'madon');
         }
 
-        // BỘ ĐỌC TSV: CHỐNG DÍNH DÒNG BẰNG CÁCH CHẶT THEO ENTER
         function parseTSV(text) {
             let rows = [];
             let lines = text.split(/\r?\n/);
-
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
                 if (!line.trim()) continue;
-
                 let cols = line.split('\t');
                 for (let j = 0; j < cols.length; j++) {
                     let cell = cols[j];
@@ -370,16 +354,32 @@
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
         }
 
-        // ==========================================
-        // KHU VỰC 1: XỬ LÝ DỮ LIỆU VẬT LIỆU
-        // ==========================================
-        let materialDatabase = {};
+        // Chuyển Tab nhanh
+        function autoSearchKho(code) {
+            if (khoDatabase.length === 0) {
+                alert("Dữ liệu Kho chưa được tải, vui lòng chờ!");
+                return;
+            }
+            switchTab('kho');
+            const khoInput = document.getElementById('searchInput');
+            khoInput.value = code;
+            searchKho();
+        }
 
-        window.onload = function () {
-            initKhoData();
-            initMaterialData();
-        };
+        function autoSearchMaterial(code) {
+            if (Object.keys(materialDatabase).length === 0) {
+                alert("Dữ liệu Vật Liệu chưa được tải, vui lòng chờ!");
+                return;
+            }
+            switchTab('material');
+            const matInput = document.getElementById('msvlInput');
+            matInput.value = code;
+            searchMaterial();
+        }
 
+        // ==========================================
+        // 1. XỬ LÝ DỮ LIỆU: VẬT LIỆU
+        // ==========================================
         function initMaterialData() {
             const cachedMaterial = localStorage.getItem('onlineMaterialDatabase');
             const lastSync = localStorage.getItem('onlineMaterialLastSync');
@@ -404,7 +404,7 @@
             const syncBtn = document.getElementById('syncMaterialBtn');
             syncBtn.disabled = true;
             syncBtn.innerText = "Đang tải...";
-            document.getElementById('materialStatus').innerText = "Đang đồng bộ dữ liệu Vật Liệu...";
+            document.getElementById('materialStatus').innerText = "Đang tải dữ liệu Vật Liệu...";
             document.getElementById('materialStatus').className = "status-text";
             document.getElementById('msvlInput').disabled = true;
             document.getElementById('btnMaterialSearch').disabled = true;
@@ -413,7 +413,6 @@
                 const response = await fetch(MATERIAL_SHEET_URL);
                 if (!response.ok) throw new Error("Mạng lỗi");
                 const tsvText = await response.text();
-
                 const rows = parseTSV(tsvText);
                 let tempMatDB = {};
 
@@ -422,8 +421,6 @@
                     if (row.length >= 2) {
                         let ma = row[0] ? row[0].trim().toUpperCase() : "";
                         let rawTen = row[1] ? row[1].trim() : "";
-
-                        // Chống dính dòng (nếu có lỗi ngầm từ Sheets)
                         let ten = rawTen;
                         const errorMatch = ten.match(/\sHL02\d{11}/);
                         if (errorMatch) {
@@ -433,25 +430,20 @@
                         let extraCodes = [];
                         for (let j = 2; j < row.length; j++) {
                             let val = row[j] ? row[j].trim() : "";
-                            if (val !== "" && val.length > 4 && val.length < 15 && /^[a-zA-Z0-9_-]+$/.test(val)) {
+                            if (val !== "" && val.length > 4 && val.length < 15) {
+                                val = val.replace(/\.0$/, ''); // Xóa .0 nếu có
                                 extraCodes.push(val);
                             }
                         }
-
                         if (ma && ten && !ma.includes("MÃ VẬT LIỆU") && !ma.includes("MATERIAL")) {
-                            tempMatDB[ma] = {
-                                ten: ten,
-                                extra: extraCodes
-                            };
+                            tempMatDB[ma] = { ten: ten, extra: extraCodes };
                         }
                     }
                 }
-
                 materialDatabase = tempMatDB;
                 const syncTime = new Date().toLocaleString('vi-VN');
                 localStorage.setItem('onlineMaterialDatabase', JSON.stringify(materialDatabase));
                 localStorage.setItem('onlineMaterialLastSync', syncTime);
-
                 document.getElementById('materialStatus').innerText = `Đã tải mới ${Object.keys(materialDatabase).length} mã.\n(Cập nhật: ${syncTime})`;
                 document.getElementById('materialStatus').className = "status-text status-success";
                 enableMaterialSearch();
@@ -465,25 +457,13 @@
             }
         }
 
-        function autoSearchKho(code) {
-            const khoInput = document.getElementById('searchInput');
-            if (khoInput.disabled) {
-                alert("Vui lòng tải dữ liệu kho trước!");
-                return;
-            }
-            switchTab('kho');
-            khoInput.value = code;
-            searchKho();
-        }
-
         function searchMaterial() {
             const query = document.getElementById('msvlInput').value.trim().toUpperCase();
             const resultBox = document.getElementById('materialResultWrapper');
             const errorBox = document.getElementById('materialErrorBox');
-
             if (!query) return;
-            let results = [];
 
+            let results = [];
             for (const [ma, data] of Object.entries(materialDatabase)) {
                 let matchMaChinh = ma.includes(query);
                 let matchMaPhu = data.extra && data.extra.some(code => code.toUpperCase().includes(query));
@@ -497,48 +477,43 @@
             if (results.length > 0) {
                 let htmlContent = `<div class="summary-text" style="color:var(--material-color)">Tìm thấy ${results.length} vật liệu:</div>`;
                 results.forEach(item => {
-
                     let extraHtml = '';
                     if (item.extra && item.extra.length > 0) {
                         extraHtml += `<div style="margin-top: 15px; border-top: 1px dashed #bbdefb; padding-top: 10px;">`;
-
                         let seenCodes = new Set();
+                        
                         item.extra.forEach(code => {
                             let upperCode = code.toUpperCase();
                             if (seenCodes.has(upperCode)) return;
                             seenCodes.add(upperCode);
-
                             let isCodeFound = false;
 
                             if (khoDatabase && khoDatabase.length > 0) {
                                 let km = khoDatabase.find(k => k.ma.toUpperCase().includes(upperCode));
                                 if (km) {
-                                    let badgeClass = km.kho === 'Biểu Mẫu' ? 'badge hinh-the-bm' : 'badge hinh-the-gm';
-
+                                    let badgeClass = km.kho.toLowerCase().includes('biểu mẫu') ? 'badge hinh-the-bm' : 'badge hinh-the-gm';
                                     extraHtml += `
                                         <div style="margin: 8px 0; font-size: 15px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
                                             <strong class="${badgeClass}" style="font-size: 12px; padding: 2px 5px; border-radius:3px;">Hình Thể</strong> 
                                             <span>: <strong>${km.ten}</strong> - </span>
-                                            <span class="extra-code-tag" onclick="autoSearchKho('${code}')" title="Nhấp để tìm chi tiết tủ">${code}</span>
+                                            <span class="extra-code-tag" onclick="autoSearchKho('${code}')" title="Nhấp để chuyển sang tab Vị trí và tra mã này">${code}</span>
                                         </div>
                                     `;
                                     isCodeFound = true;
                                 }
                             }
-
                             if (!isCodeFound) {
                                 extraHtml += `
                                     <div style="margin: 8px 0; font-size: 15px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;">
-                                        <span style="font-size: 13px; color: #757575; font-style: italic;">(Chưa có thông tin kho)</span> 
+                                        <span style="font-size: 13px; color: #757575; font-style: italic;">(Chưa rà soát kho)</span> 
                                         <span> - </span>
-                                        <span class="extra-code-tag" onclick="autoSearchKho('${code}')" title="Nhấp để tìm thử trong kho">${code}</span>
+                                        <span class="extra-code-tag" onclick="autoSearchKho('${code}')" title="Nhấp để tra thử mã này bên kho">${code}</span>
                                     </div>
                                 `;
                             }
                         });
                         extraHtml += `</div>`;
                     }
-
                     htmlContent += `
                         <div class="result-card card-material">
                             <p style="margin-bottom: 6px;">Mã: <strong style="color: #d32f2f; font-size: 16px;">${item.ma}</strong></p>
@@ -554,12 +529,9 @@
             }
         }
 
-
         // ==========================================
-        // KHU VỰC 2: XỬ LÝ DỮ LIỆU KHO
+        // 2. XỬ LÝ DỮ LIỆU: VỊ TRÍ KHO
         // ==========================================
-        let khoDatabase = [];
-
         function initKhoData() {
             const cachedKho = localStorage.getItem('onlineKhoDatabase');
             const lastSync = localStorage.getItem('onlineKhoLastSync');
@@ -582,7 +554,7 @@
             const syncBtn = document.getElementById('syncKhoBtn');
             syncBtn.disabled = true;
             syncBtn.innerText = "Đang tải...";
-            document.getElementById('khoStatus').innerText = "Đang đồng bộ dữ liệu từ máy chủ...";
+            document.getElementById('khoStatus').innerText = "Đang tải dữ liệu Vị Trí...";
             document.getElementById('khoStatus').className = "status-text";
             document.getElementById('searchInput').disabled = true;
             document.getElementById('searchBtn').disabled = true;
@@ -610,12 +582,12 @@
                 if (khoDatabase.length > 0) enableKhoSearch();
             } finally {
                 syncBtn.disabled = false;
-                syncBtn.innerText = "🔄 Làm mới";
+                syncBtn.innerText = "🔄 Làm mới kho";
             }
         }
 
-        function parseKhoDynamic(tsv, khoName, targetDB) {
-            const rows = parseTSV(tsv);
+        function parseKhoDynamic(tsvText, khoName, targetDB) {
+            const rows = parseTSV(tsvText);
             let cabinetMap = []; let blockStarts = [];
 
             for (let i = 0; i < rows.length; i++) {
@@ -679,20 +651,19 @@
 
         function searchKho() {
             const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const resultsWrapper = document.getElementById('resultsWrapper');
+            const errorBox = document.getElementById('errorBox');
             if (!query) return;
 
             const results = khoDatabase.filter(i =>
                 i.ma.toLowerCase().includes(query) || i.ten.toLowerCase().includes(query)
             );
 
-            const resultsWrapper = document.getElementById('resultsWrapper');
-            const errorBox = document.getElementById('errorBox');
             resultsWrapper.innerHTML = '';
-
             if (results.length > 0) {
                 let htmlContent = `<div class="summary-text" style="color:var(--primary-color)">Tìm thấy ${results.length} vị trí:</div>`;
                 results.forEach(item => {
-                    const badgeClass = item.kho === 'Biểu Mẫu' ? 'badge bieu-mau' : 'badge giay-mau';
+                    const badgeClass = item.kho.toLowerCase().includes('biểu mẫu') ? 'badge hinh-the-bm' : 'badge hinh-the-gm';
                     htmlContent += `
                         <div class="result-card card-kho">
                             <span class="${badgeClass}">${item.kho}</span>
@@ -709,11 +680,161 @@
             }
         }
 
+        // ==========================================
+        // 3. XỬ LÝ DỮ LIỆU: MÃ ĐƠN (TỪ GOOGLE SHEETS)
+        // ==========================================
+        function initMaDonData() {
+            const cachedMadon = localStorage.getItem('onlineMaDonDatabase');
+            const lastSync = localStorage.getItem('onlineMaDonLastSync');
+            if (cachedMadon && lastSync) {
+                madonDatabase = JSON.parse(cachedMadon);
+                document.getElementById('madonStatus').innerText = `Đã nạp ${madonDatabase.length} dữ liệu (từ bộ nhớ).\n(Cập nhật: ${lastSync})`;
+                document.getElementById('madonStatus').className = "status-text status-success";
+                enableMaDonSearch();
+            } else {
+                fetchMaDonData();
+            }
+        }
+        
+        function enableMaDonSearch() {
+            document.getElementById('madonInput').disabled = false;
+            document.getElementById('btnMadonSearch').disabled = false;
+        }
+
+        async function fetchMaDonData() {
+            const syncBtn = document.getElementById('syncMaDonBtn');
+            syncBtn.disabled = true;
+            syncBtn.innerText = "Đang tải...";
+            document.getElementById('madonStatus').innerText = "Đang tải dữ liệu Mã Đơn...";
+            document.getElementById('madonStatus').className = "status-text";
+            document.getElementById('madonInput').disabled = true;
+            document.getElementById('btnMadonSearch').disabled = true;
+
+            try {
+                const response = await fetch(MADON_SHEET_URL);
+                if (!response.ok) throw new Error("Mạng lỗi");
+                const tsvText = await response.text();
+                const rows = parseTSV(tsvText);
+                
+                let tempMadonDB = [];
+                let headers = rows.length > 0 ? rows[0].map(h => h.toUpperCase()) : [];
+                let sapIdx = headers.indexOf('SAP');
+                let slIdx = headers.indexOf('SL');
+                let dddIdx = headers.indexOf('DDD');
+                let hinhTheIdx = headers.indexOf('HINH THE');
+                let shtIdx = headers.indexOf('SHT');
+                
+                if (sapIdx === -1) sapIdx = 0;
+                if (slIdx === -1) slIdx = 1;
+                if (dddIdx === -1) dddIdx = 2;
+                if (hinhTheIdx === -1) hinhTheIdx = 3;
+                if (shtIdx === -1) shtIdx = 4;
+
+                for (let i = 1; i < rows.length; i++) {
+                    let row = rows[i];
+                    if (row.length < 2) continue;
+                    tempMadonDB.push({
+                        sap: row[sapIdx] ? row[sapIdx].trim() : "",
+                        sl: row[slIdx] ? row[slIdx].trim() : "",
+                        ddd: row[dddIdx] ? row[dddIdx].trim() : "",
+                        hinhthe: row[hinhTheIdx] ? row[hinhTheIdx].trim() : "",
+                        sht: row[shtIdx] ? row[shtIdx].trim() : ""
+                    });
+                }
+                
+                madonDatabase = tempMadonDB;
+                const syncTime = new Date().toLocaleString('vi-VN');
+                localStorage.setItem('onlineMaDonDatabase', JSON.stringify(madonDatabase));
+                localStorage.setItem('onlineMaDonLastSync', syncTime);
+
+                document.getElementById('madonStatus').innerText = `Đã nạp ${madonDatabase.length} dữ liệu.\n(Cập nhật: ${syncTime})`;
+                document.getElementById('madonStatus').className = "status-text status-success";
+                enableMaDonSearch();
+            } catch (error) {
+                document.getElementById('madonStatus').innerText = "Lỗi kết nối. Không thể tải dữ liệu Mã Đơn.";
+                document.getElementById('madonStatus').className = "status-text";
+                if (madonDatabase.length > 0) enableMaDonSearch();
+            } finally {
+                syncBtn.disabled = false;
+                syncBtn.innerText = "🔄 Làm mới đơn";
+            }
+        }
+
+        function searchMaDon() {
+            const query = document.getElementById('madonInput').value.trim().toUpperCase();
+            const wrapper = document.getElementById('madonResultWrapper');
+            const errBox = document.getElementById('madonErrorBox');
+            if (!query) return;
+
+            const results = madonDatabase.filter(item => 
+                item.sap.toUpperCase().includes(query) || 
+                item.ddd.toUpperCase().includes(query) || 
+                item.sht.toUpperCase().includes(query) ||
+                item.hinhthe.toUpperCase().includes(query)
+            );
+            
+            if (results.length > 0) {
+                let htmlContent = `<div class="summary-text" style="color:var(--madon-color)">Tìm thấy ${results.length} kết quả:</div>`;
+                results.forEach(item => {
+                    let shtTag = item.sht ? `<span class="extra-code-tag" onclick="autoSearchKho('${item.sht}')" title="Nhấp để chuyển sang tab Vị trí và tra mã này">${item.sht}</span>` : '<em>(Chưa có mã)</em>';
+                    
+                    let matchedHlCodes = [];
+                    if (item.sht && Object.keys(materialDatabase).length > 0) {
+                        const upperSHT = item.sht.toUpperCase();
+                        for (const [ma, data] of Object.entries(materialDatabase)) {
+                            let isMatchMa = ma.toUpperCase().includes(upperSHT);
+                            let isMatchExtra = data.extra && data.extra.some(code => code.toUpperCase() === upperSHT);
+                            if (isMatchMa || isMatchExtra) {
+                                matchedHlCodes.push(ma);
+                            }
+                        }
+                    }
+
+                    let hlTagHtml = '';
+                    if (matchedHlCodes.length > 0) {
+                        let seenHl = new Set();
+                        let tags = [];
+                        matchedHlCodes.forEach(hlCode => {
+                            if (!seenHl.has(hlCode)) {
+                                seenHl.add(hlCode);
+                                tags.push(`<span class="extra-code-tag" style="background-color: #e3f2fd; color: #1565c0; border-color: #90caf9;" onclick="autoSearchMaterial('${hlCode}')" title="Nhấp để chuyển sang tab Vật liệu tra chi tiết mã này">${hlCode}</span>`);
+                            }
+                        });
+                        hlTagHtml = tags.join(' ');
+                    } else if (Object.keys(materialDatabase).length > 0) {
+                        hlTagHtml = '<span style="font-size: 13px; color: #757575; font-style: italic;">(Không tìm thấy mã vật liệu)</span>';
+                    } else {
+                        hlTagHtml = '<span style="font-size: 13px; color: #757575; font-style: italic;">(Chưa nạp file Vật Liệu)</span>';
+                    }
+
+                    htmlContent += `
+                        <div class="result-card card-madon">
+                            <span class="badge madon-badge">Đơn Đặt Hàng</span>
+                            <p>SAP: <strong style="color: #d32f2f; font-size: 16px;">${item.sap}</strong></p>
+                            <p>DDD: <strong>${item.ddd}</strong></p>
+                            <p>Mã Vật Liệu: ${hlTagHtml}</p>
+                            <p>Hình thể: <strong>${item.hinhthe}</strong></p>
+                            <p>Mã hình thể (SHT): ${shtTag}</p>
+                            <p>Số lượng: <strong style="color: #1b5e20;">${item.sl}</strong></p>
+                        </div>
+                    `;
+                });
+                wrapper.innerHTML = htmlContent;
+                errBox.style.display = 'none';
+            } else {
+                wrapper.innerHTML = '';
+                errBox.style.display = 'block';
+            }
+        }
+
+        document.getElementById('msvlInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !this.disabled) searchMaterial();
+        });
         document.getElementById('searchInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && !this.disabled) searchKho();
         });
-        document.getElementById('msvlInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && !this.disabled) searchMaterial();
+        document.getElementById('madonInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !this.disabled) searchMaDon();
         });
     </script>
 </body>
